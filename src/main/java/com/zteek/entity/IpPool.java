@@ -6,8 +6,17 @@ public class IpPool {
     private Long id;
     private String ip;
     private int port;
+    private String vps;
     private String account;
     private String password;
+
+    public String getVps() {
+        return vps;
+    }
+
+    public void setVps(String vps) {
+        this.vps = vps;
+    }
 
     public int getPort() {
         return port;

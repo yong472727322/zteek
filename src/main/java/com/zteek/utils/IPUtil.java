@@ -1,9 +1,17 @@
 package com.zteek.utils;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -12,55 +20,111 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 @Component
-public class IPUtil  {
+public class IPUtil {
 
+    private static Logger log = LoggerFactory.getLogger(IPUtil.class);
     /**
      * 默认 重拨 计数器
      */
     private static final int DEFAULT_COUNT = 5;
 
+    /**
+     * 更换IP标识，true：VPS正在重新拨号
+     */
+    public static boolean changIpFlag = false;
+
     private int changCount = DEFAULT_COUNT;
     private Set<String> changIpSet = new HashSet<>();
+    private Set<String> changIpSet2 = new HashSet<>();
 
-    public void setChangCount(int cc){
-        if(cc > 0){
+    /**
+     * 当前IP
+     */
+    public static String currentIp = "";
+
+    public void setChangCount(int cc) {
+        if (cc > 0) {
             this.changCount = cc;
-        }else {
+        } else {
             this.changCount = DEFAULT_COUNT;
         }
 
     }
-    public int getChangCount(){
+
+    public int getChangCount() {
         return changCount;
     }
 
-    public boolean changIp(String imei, String ip){
+    public static String getIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+            //多次反向代理后会有多个ip值，第一个ip才是真实ip
+            int index = ip.indexOf(",");
+            if (index != -1) {
+                return ip.substring(0, index);
+            } else {
+                return ip;
+            }
+        }
+        ip = request.getHeader("X-Real-IP");
+        if (StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+            return ip;
+        }
+        return request.getRemoteAddr();
+    }
+
+    public boolean changIp(String imei) {
         changIpSet.add(imei);
-        if(changIpSet.size() >= changCount){
+        if (changIpSet.size() > changCount) {
+            log.info("调用获取IP次数达到次数，换IP");
             //发送更换IP请求
-            changVpsIp(ip);
+            changVpsIp(currentIp);
             //清空计数
             changIpSet.clear();
+            changIpSet2.clear();
+            changIpFlag = true;
             return true;
         }
         return false;
     }
 
-    private void changVpsIp(String ip) {
-        CloseableHttpClient httpCilent = HttpClients.createDefault();//Creates CloseableHttpClient instance with default configuration.
-        HttpGet httpGet = new HttpGet("http://"+ip+":1819/amazon/changVpsIp");
+    public boolean changIp2(String imei) {
+        changIpSet2.add(imei);
+        if (changIpSet2.size() >= changCount) {
+            log.info("主动请求换IP");
+            //发送更换IP请求
+            changVpsIp(currentIp);
+            //清空计数
+            changIpSet.clear();
+            changIpSet2.clear();
+            changIpFlag = true;
+            return true;
+        }
+        return false;
+    }
+
+    public void changVpsIp(String ip) {
+        HttpClient httpCilent = HttpClients.createDefault();        //Creates CloseableHttpClient instance with default configuration.
+        String url = "http://" + ip + ":1819/amazon/changVpsIp";
+        HttpGet httpGet = new HttpGet(url);
         try {
+            RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectTimeout(2000).build();//设置请求和传输超时时间
+            httpGet.setConfig(requestConfig);
+            log.info("发送GET请求到[{}]", url);
             httpCilent.execute(httpGet);
+        } catch (SocketTimeoutException e) {
+            log.warn("chang ip success");
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
-                httpCilent.close();//释放资源
+                ((CloseableHttpClient) httpCilent).close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -69,112 +133,14 @@ public class IPUtil  {
 
     private static String host = "";
 
-    public String getHost2(){
+    public String getHost() {
         return host;
     }
 
-    public String getHost(){
-        Runtime runtime = Runtime.getRuntime();
-        String charsetName = "UTF-8";
-//        charsetName = "GBK";
-        String result = null;
-        try {
-            System.out.println("=================get proxy ip：");
-            Process process = runtime.exec("  /root/get-ip.sh ");
-            InputStream iStream = process.getInputStream();
-            InputStreamReader iSReader = new InputStreamReader(iStream,charsetName);
-            BufferedReader bReader = new BufferedReader(iSReader);
-            String line = null;
-            StringBuffer sb = new StringBuffer();
-            while ((line = bReader.readLine()) != null) {
-                sb.append(line);
-            }
-            iStream.close();
-            iSReader.close();
-            bReader.close();
-            result  = new String(sb.toString().getBytes(charsetName));
-        } catch (Exception e) {
-            System.out.println("网络异常："+e.getMessage());
-            e.printStackTrace();
-        }
-        return result;
+
+    public int getCurrentCount() {
+        return changIpSet.size();
     }
 
 
-    public static String getIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if(StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)){
-            //多次反向代理后会有多个ip值，第一个ip才是真实ip
-            int index = ip.indexOf(",");
-            if(index != -1){
-                return ip.substring(0,index);
-            }else{
-                return ip;
-            }
-        }
-        ip = request.getHeader("X-Real-IP");
-        if(StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)){
-            return ip;
-        }
-        return request.getRemoteAddr();
-    }
-
-
-//    @Scheduled(cron = "0/30 * * * * ?")
-    public void testVPN() {
-        getNetworkState("www.GOOGLE.com");
-    }
-
-    @Scheduled(cron = "0 0 * * * ?")
-    public void getNewHost() {
-        System.out.println(new Date()+ " 开始切换IP");
-        host = getHost();
-        System.out.println(new Date()+ " 获取IP成功");
-    }
-
-
-    private void getNetworkState(String ip) {
-        Runtime runtime = Runtime.getRuntime();
-        String charsetName = "UTF-8";
-//        charsetName = "GBK";
-        try {
-            System.out.println("=================test ip："+ip);
-            Process process = runtime.exec("ping " +ip + "  -c 5 ");
-            InputStream iStream = process.getInputStream();
-            InputStreamReader iSReader = new InputStreamReader(iStream,charsetName);
-            BufferedReader bReader = new BufferedReader(iSReader);
-            String line = null;
-            StringBuffer sb = new StringBuffer();
-            while ((line = bReader.readLine()) != null) {
-                sb.append(line);
-            }
-            iStream.close();
-            iSReader.close();
-            bReader.close();
-            String result  = new String(sb.toString().getBytes(charsetName));
-            System.out.println("ping result:"+result);
-            if (!StringUtils.isBlank(result)) {
-                if (result.indexOf("TTL") > 0 || result.indexOf("ttl") > 0) {
-                    System.out.println("success,time:" + new Date());
-                } else {
-                    System.out.println("fail,time:" + new Date());
-
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("网络异常："+e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-//    @Override
-//    public void run(String... args) throws Exception {
-//        System.out.println("初始化获取代理IP");
-//        host = getHost();
-//        System.out.println("获取代理IP成功，IP为：["+host+"]");
-//    }
-
-    public void setHost(String host2) {
-        host = host2;
-    }
 }

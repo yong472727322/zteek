@@ -35,15 +35,23 @@ public class IpPoolServiceImpl implements IpPoolService {
         ipPoolMapper.insertRecord(record);
 
         //写入内存计数
-        IpPool newIP = this.getNewIP();
-        ipUtil.changIp(imei,newIP.getIp());
-
+        boolean b = ipUtil.changIp(imei);
+        if(b){
+            return 2;
+        }
         return 1;
     }
 
     @Override
-    public void insertIP(IpPool ipPool) {
-        ipPoolMapper.insertIP(ipPool);
+    public int insertIP(IpPool ipPool) {
+        int i = ipPoolMapper.checkIP(ipPool.getIp(),ipPool.getVps());
+        if(0 == i){
+            //此IP近1小时没有出现过
+            ipPoolMapper.insertIP(ipPool);
+            return 1;
+        }
+        return 0;
+
     }
 
 }

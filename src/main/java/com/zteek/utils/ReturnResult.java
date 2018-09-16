@@ -6,6 +6,11 @@ public class ReturnResult {
     private String message;
     private Object object;
 
+    public ReturnResult() {
+        this.code = "0000";
+        this.message="success";
+    }
+
     public String getCode() {
         return code;
     }

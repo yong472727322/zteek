@@ -37,20 +37,23 @@ public class AmazonController {
         ReturnResult rr = new ReturnResult();
         try{
             String ip = IPUtil.getIp(request);
-            logger.info("客户端[{}]请求代理地址",ip);
+            logger.info("客户端[{}],ip[{}]请求代理地址",imei,ip);
             if(null == token || "".equals(token)){
                 rr.setCode("9999");
                 rr.setMessage("fail");
+                rr.setObject("token不能为空");
                 return rr;
             }
             if(null == timestamp || "".equals(timestamp)){
                 rr.setCode("9999");
                 rr.setMessage("fail");
+                rr.setObject("timestamp不能为空");
                 return rr;
             }
             if(null == imei || "".equals(imei)){
                 rr.setCode("9999");
                 rr.setMessage("fail");
+                rr.setObject("IMEI不能为空");
                 return rr;
             }
             //如果请求时间大于60分钟，返回失败
@@ -59,6 +62,7 @@ public class AmazonController {
             if(l > (1000*60*60)){
                 rr.setCode("9999");
                 rr.setMessage("fail");
+                rr.setObject("请求时间大于60分钟");
                 return rr;
             }
 
@@ -68,8 +72,6 @@ public class AmazonController {
                 //根据手机IMEI获取IP
                 IpPool ipPool = ipPoolService.getIPByIMEI(imei);
 
-                rr.setCode("0000");
-                rr.setMessage("success");
                 ProxyMessage pm = new ProxyMessage();
                 pm.setAddr(ipPool.getIp());
                 pm.setPort(ipPool.getPort());
@@ -78,10 +80,16 @@ public class AmazonController {
                 rr.setObject(pm);
 
                 //插入一条使用记录
-                ipPoolService.insertUseRecord(ipPool.getId(),ip,imei);
+                int i = ipPoolService.insertUseRecord(ipPool.getId(), ip, imei);
+                if(2 == i){
+                    rr.setCode("9999");
+                    rr.setMessage("fail");
+                    rr.setObject("IP使用次数达到，切换。");
+                }
             }else {
                 rr.setCode("9999");
                 rr.setMessage("fail");
+                rr.setObject("token验证失败不能为空");
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -101,7 +109,7 @@ public class AmazonController {
         ReturnResult rr = new ReturnResult();
         try{
             String ip = IPUtil.getIp(request);
-            logger.info("客户端[{}]发送换IP请求",ip);
+            logger.info("客户端[{}],ip[{}]发送换IP请求",imei,ip);
             if(null == token || "".equals(token)){
                 rr.setCode("9999");
                 rr.setMessage("fail");
@@ -128,16 +136,14 @@ public class AmazonController {
 
             String s = MD5.MD5(String.valueOf(timestamp));
             if(s.toUpperCase().equals(token.toUpperCase())){
-                rr.setCode("0000");
-                rr.setMessage("success");
-                boolean b = ipUtil.changIp(imei, ip);
+                boolean b = ipUtil.changIp2(imei);
                 rr.setObject(b);
             }else {
                 rr.setCode("9999");
                 rr.setMessage("fail");
             }
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("发送换IP请求出错，原因：[{}]",e);
         }
         return rr;
     }
@@ -148,9 +154,54 @@ public class AmazonController {
      */
     @RequestMapping("saveIP")
     public void saveIP(IpPool ipPool){
-        ipPoolService.insertIP(ipPool);
+        logger.info("VPS[{}]发送保存IP[{}]请求",ipPool.getVps(),ipPool.getIp());
+        int i = ipPoolService.insertIP(ipPool);
+        if(1 == i){
+            //VPS更换IP成功，修改状态
+            IPUtil.changIpFlag = false;
+        }else {
+            //再次请求VPS更换IP
+            ipUtil.changVpsIp(ipPool.getIp());
+        }
     }
 
+    /**
+     * 记录VPS当前IP
+     * @return
+     */
+    @RequestMapping("recordIP")
+    public void recordIP(String ip,String vps){
+        logger.info("记录vps[{}]发送过来的ip[{}]",vps,ip);
+        IPUtil.currentIp = ip;
+        //查询出数据库中最新的IP
+        IpPool newIP = ipPoolService.getNewIP();
+        String dbIP = newIP.getIp();
+        logger.info("数据库中最新的IP[{}]",dbIP);
+        //比较是否相同
+        if (!dbIP.equals(ip)) {
+            logger.warn("数据库IP[{}]和VPS[{}]发送过来的IP[{}]不一致，更新数据库。",dbIP,vps,ip);
+            //不相同，插入数据库
+            newIP.setIp(ip);
+            newIP.setVps(vps);
+            int i = ipPoolService.insertIP(newIP);
+            if(0 == i){
+                //此IP重复，发送切换IP请求到VPS
+                logger.warn("此IP[{}]重复，发送切换IP请求到VPS[{}]",ip,vps);
+                ipUtil.changVpsIp(ip);
+            }
+        }
+        //打印空行，隔开日志
+        System.out.println();
+    }
+
+    /**
+     * 获取VPS当前IP
+     * @return
+     */
+    @RequestMapping("getIP")
+    public String getIP(){
+        return IPUtil.currentIp;
+    }
 
     /**
      * 修改更换计数器
@@ -169,6 +220,15 @@ public class AmazonController {
     @RequestMapping("getChangCount")
     public Object getChangCount(){
         return ipUtil.getChangCount();
+    }
+
+    /**
+     * 获取 计数器
+     * @return
+     */
+    @RequestMapping("getCurrentCount")
+    public Object getCurrentCount(){
+        return ipUtil.getCurrentCount();
     }
 
 

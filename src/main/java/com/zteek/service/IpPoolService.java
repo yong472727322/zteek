@@ -29,5 +29,5 @@ public interface IpPoolService {
      * 保存VPS
      * @param ipPool
      */
-    void insertIP(IpPool ipPool);
+    int insertIP(IpPool ipPool);
 }
