@@ -19,7 +19,7 @@ import java.util.Set;
  */
 @Component
 @ServletComponentScan
-@WebFilter(urlPatterns = "/admin/*",filterName = "loginFilter")
+@WebFilter(urlPatterns = {"/admin/*","/"},filterName = "loginFilter")
 public class LoginFilter implements Filter {
 
     //不用过虑的地址
@@ -37,13 +37,17 @@ public class LoginFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest)arg0;
         HttpServletResponse response = (HttpServletResponse)arg1;
         String requestURI = request.getRequestURI();
-        if(needLogin(requestURI)) {
+        if("/".equalsIgnoreCase(requestURI)){
+            // 需要登录则跳转到登录Controller
+            response.sendRedirect("/admin/index");
+            return;
+        }else if(needLogin(requestURI)) {
             //判断是否已经登陆了
             HttpSession session = request.getSession();
             User user = (User) session.getAttribute(Constant.user);
             if(null == user){
                 // 需要登录则跳转到登录Controller
-                response.sendRedirect("toLogin");
+                response.sendRedirect("/admin/toLogin");
                 return;
             }
         }

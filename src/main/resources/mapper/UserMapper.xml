@@ -5,6 +5,7 @@
     <resultMap id="BaseResultMap" type="com.zteek.entity.User" >
         <id column="id" property="id"/>
         <result column="username" property="username" />
+        <result column="name" property="name" />
         <result column="password" property="password" />
         <result column="status" property="status" />
         <result column="created_by" property="createdBy" />
@@ -12,7 +13,7 @@
     </resultMap>
 
     <select id="findUserByUsername" resultMap="BaseResultMap">
-        select u.id,u.username,u.`password`,u.`status` from users u where u.username=#{username} limit 1
+        select u.id,u.username,u.name,u.`password`,u.`status` from users u where u.username=#{username} limit 1
     </select>
 
 

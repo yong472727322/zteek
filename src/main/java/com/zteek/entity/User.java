@@ -6,6 +6,7 @@ public class User {
 
     private Long id;
     private String username;
+    private String name;
     private String password;
     /**
      * 账号状态，0-无效，1-有效
@@ -13,6 +14,14 @@ public class User {
     private Integer status;
     private String createdBy;
     private Date createdDate;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Long getId() {
         return id;

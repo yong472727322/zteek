@@ -8,15 +8,22 @@
         <result column="port" property="port" />
         <result column="account" property="account" />
         <result column="password" property="password" />
+        <result column="vps" property="vps" />
     </resultMap>
 
-    <select id="getNewIP" resultMap="BaseResultMap">
-        select ip,port,account,password from ip_pool order by create_date desc limit 1
+    <!--获取指定VPS最新的IP-->
+    <select id="getNewIpByVps" resultMap="BaseResultMap">
+        select vps,ip,port,account,password from ip_pool where vps=#{vps} order by create_date desc limit 1
     </select>
 
     <select id="getIPByIMEI" resultMap="BaseResultMap">
         select t.id,t.ip,t.`port`,t.account,t.`password` from (select * from ip_pool t order by t.create_date desc limit 5) t
         where t.id not in (SELECT t.p_id from ip_record t where t.imei=1 and t.start_date &lt;  DATE_SUB(now(),INTERVAL 1 HOUR)) limit 1
+    </select>
+
+    <!--获取所有VPS最新的IP-->
+    <select id="getVpsNewIps">
+        select * from (select * from ip_pool t order by t.create_date desc limit 999999) a GROUP BY a.vps
     </select>
 
     <insert id="insertRecord">

@@ -13,10 +13,10 @@ import java.util.List;
 public interface IpPoolMapper {
 
     /**
-     * 查询最新的IP信息
+     * 获取指定VPS最新的IP
      * @return
      */
-    IpPool getNewIP();
+    IpPool getNewIpByVps(@Param("vps")String vps);
 
     /**
      * 根据IMEI获取IP
@@ -24,6 +24,12 @@ public interface IpPoolMapper {
      * @return
      */
     IpPool getIPByIMEI(String imei);
+
+    /**
+     * 获取所有VPS最新的IP
+     * @return
+     */
+    List<IpPool> getVpsNewIps();
 
     /**
      * 插入使用记录

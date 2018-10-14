@@ -14,6 +14,70 @@ public class AmazonTask {
     private String createdBy;
     private Date createdDate;
 
+    private String asin;
+    private String keyword;
+    private String keyword1;
+    private String keyword2;
+    private String productName;
+    private Date calendarDate;
+    private Integer total;
+
+    public Date getCalendarDate() {
+        return calendarDate;
+    }
+
+    public void setCalendarDate(Date calendarDate) {
+        this.calendarDate = calendarDate;
+    }
+
+    public Integer getTotal() {
+        return total;
+    }
+
+    public void setTotal(Integer total) {
+        this.total = total;
+    }
+
+    public String getAsin() {
+        return asin;
+    }
+
+    public void setAsin(String asin) {
+        this.asin = asin;
+    }
+
+    public String getKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(String keyword) {
+        this.keyword = keyword;
+    }
+
+    public String getKeyword1() {
+        return keyword1;
+    }
+
+    public void setKeyword1(String keyword1) {
+        this.keyword1 = keyword1;
+    }
+
+    public String getKeyword2() {
+        return keyword2;
+    }
+
+    public void setKeyword2(String keyword2) {
+        this.keyword2 = keyword2;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
     public String getArgs() {
         return args;
     }

@@ -6,10 +6,10 @@ public interface IpPoolService {
 
 
     /**
-     * 获取最新的IP
+     * 获取指定VPS最新的IP
      * @return
      */
-    IpPool getNewIP();
+    IpPool getNewIpByVps(String vps);
     /**
      * 根据手机IMEI获取IP
      * @return

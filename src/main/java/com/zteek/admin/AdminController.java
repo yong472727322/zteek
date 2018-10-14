@@ -1,21 +1,34 @@
 package com.zteek.admin;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.zteek.entity.AmazonTask;
+import com.zteek.entity.DatatablesView;
 import com.zteek.entity.User;
 import com.zteek.exception.BusinessException;
+import com.zteek.service.TaskService;
 import com.zteek.service.UserService;
 import com.zteek.utils.Constant;
 import com.zteek.utils.ReturnResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("admin")
@@ -25,6 +38,10 @@ public class AdminController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private TaskService taskService;
+    @Value("${apk.path}")
+    private String apkPath;
 
     /**
      * 转到 登陆页面
@@ -60,9 +77,22 @@ public class AdminController {
      * @return
      */
     @GetMapping("index")
-    public String index(){
+    public String index(HttpServletRequest request,ModelMap map) {
+
+        List<AmazonTask> list = taskService.indexChart();
+        map.addAttribute("chartData",list);
+
+        for(int i = 0 ; i < 10 ; i ++){
+            Map<String,Integer> map1 = taskService.indexTable(i);
+            for(Map.Entry<String,Integer> map2 : map1.entrySet()){
+                map.addAttribute(map2.getKey()+"",map2.getValue()+"");
+            }
+        }
+
         return "index";
     }
+
+
 
     /**
      * 登陆
@@ -94,4 +124,86 @@ public class AdminController {
         return rr;
     }
 
+
+    /**
+     * 转到 上传APK页面
+     * @return
+     */
+    @GetMapping("file")
+    public String file() {
+        return "file";
+    }
+
+    @PostMapping("/upload")
+    public String singleFileUpload(@RequestParam("file") MultipartFile file) {
+
+        if (file.isEmpty()) {
+            return "redirect:/admin/index";
+        }
+
+        try {
+            String filename = file.getOriginalFilename();
+            logger.info("上传文件[{}],大小[{}]MB",filename,file.getSize()/1000/1000);
+            // Get the file and save it somewhere
+            byte[] bytes = file.getBytes();
+            Path path = Paths.get(apkPath + filename);
+            Files.write(path, bytes);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "redirect:/admin/index";
+    }
+
+
+    @GetMapping("taskList")
+    public String taskList(){
+        return "taskList";
+    }
+
+
+    @ResponseBody
+    @RequestMapping("taskData")
+    public Object taskData(){
+        List<AmazonTask> taskList = taskService.getTaskList(null);
+        for(AmazonTask task : taskList){
+            String args = task.getArgs();
+            JSONObject json = (JSONObject) JSONObject.parse(args);
+            task.setKeyword(json.get("keyword")+"");
+            task.setKeyword1(json.get("keyword1")+"");
+            task.setKeyword2(json.get("keyword2")+"");
+            task.setProductName(json.get("productName")+"");
+        }
+        DatatablesView<AmazonTask> dataView = new DatatablesView<>();
+        dataView.setRecordsTotal(taskList.size());
+        dataView.setData(taskList);
+        return dataView;
+    }
+    @GetMapping("toTaskAdd")
+    public String toTaskAdd(){
+        return "taskAdd";
+    }
+
+    /**
+     * 添加任务
+     * @param param
+     * @return
+     */
+    @PostMapping("taskAdd")
+    public String taskAdd(HttpServletRequest request,@RequestParam Map<String,Object> param){
+        AmazonTask task = new AmazonTask();
+        String s = JSONObject.toJSONString(param);
+        task.setArgs(s);
+        task.setAsin(param.get("asin")+"");
+        task.setLevel(Integer.parseInt(param.get("level")+""));
+        task.setSite("US");
+        task.setRunNum(Integer.parseInt(param.get("runNum")+""));
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute(Constant.user);
+        task.setCreatedBy(user.getName());
+        int i = taskService.insertTask(task);
+
+        return "redirect:/admin/taskList";
+    }
 }

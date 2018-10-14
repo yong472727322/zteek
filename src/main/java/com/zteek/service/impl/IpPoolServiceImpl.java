@@ -17,8 +17,8 @@ public class IpPoolServiceImpl implements IpPoolService {
     private IPUtil ipUtil;
 
     @Override
-    public IpPool getNewIP() {
-        return ipPoolMapper.getNewIP();
+    public IpPool getNewIpByVps(String vps) {
+        return ipPoolMapper.getNewIpByVps(vps);
     }
 
     @Override

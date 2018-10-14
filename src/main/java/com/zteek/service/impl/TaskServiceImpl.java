@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class TaskServiceImpl implements TaskService {
 
@@ -42,5 +45,25 @@ public class TaskServiceImpl implements TaskService {
         //更新 任务 记录
         taskMapper.updateTaskRecord(atr);
         return 1;
+    }
+
+    @Override
+    public int insertTask(AmazonTask task) {
+        return taskMapper.insertTask(task);
+    }
+
+    @Override
+    public List<AmazonTask> getTaskList(Map<String, Object> param) {
+        return taskMapper.getTaskList(param);
+    }
+
+    @Override
+    public List<AmazonTask> indexChart() {
+        return taskMapper.indexChart();
+    }
+
+    @Override
+    public Map<String, Integer> indexTable(int i) {
+        return taskMapper.indexTable(i);
     }
 }
