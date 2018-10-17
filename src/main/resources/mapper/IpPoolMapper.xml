@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zteek.mapper.IpPoolMapper" >
+
+    <resultMap id="BaseResultMap" type="com.zteek.entity.IpPool" >
+        <id column="id" property="id"/>
+        <result column="ip" property="ip" />
+        <result column="port" property="port" />
+        <result column="account" property="account" />
+        <result column="password" property="password" />
+        <result column="vps" property="vps" />
+    </resultMap>
+
+    <!--获取指定VPS最新的IP-->
+    <select id="getNewIpByVps" resultMap="BaseResultMap">
+        select id,vps,ip,port,account,password from ip_pool where vps=#{vps} order by create_date desc limit 1
+    </select>
+
+    <select id="getIPByIMEI" resultMap="BaseResultMap">
+        select t.id,t.ip,t.`port`,t.account,t.`password` from (select * from ip_pool t order by t.create_date desc limit 5) t
+        where t.id not in (SELECT t.p_id from ip_record t where t.imei=1 and t.start_date &lt;  DATE_SUB(now(),INTERVAL 1 HOUR)) limit 1
+    </select>
+
+    <!--获取所有VPS最新的IP-->
+    <select id="getVpsNewIps" resultMap="BaseResultMap">
+        select * from (select * from ip_pool t order by t.create_date desc limit 999999) a GROUP BY a.vps
+    </select>
+
+    <insert id="insertRecord">
+        INSERT INTO ip_record
+        ( `p_id`, `imei`, `ip`, `start_date`)
+        VALUES
+        (#{pId},#{imei},#{ip},now())
+    </insert>
+
+    <insert id="insertIP" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        INSERT INTO
+        ip_pool(`vps`, `ip`, `port`, `account`, `password`, `create_date`)
+        VALUES
+        (#{vps},#{ip},#{port},#{account}, #{password}, now())
+    </insert>
+
+    <select id="checkIP" resultType="int">
+        select count(1) from ip_pool where ip=#{ip} and vps=#{vps} and create_date &gt; DATE_SUB(now(),INTERVAL 1 HOUR)
+    </select>
+
+</mapper>

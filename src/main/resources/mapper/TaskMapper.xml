@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zteek.mapper.TaskMapper" >
+
+    <resultMap id="BaseResultMap" type="com.zteek.entity.AmazonTask" >
+        <id column="id" property="id"/>
+        <result column="args" property="args" />
+        <result column="asin" property="asin" />
+        <result column="level" property="level" />
+        <result column="site" property="site" />
+        <result column="run_num" property="runNum" />
+        <result column="runing_num" property="runingNum" />
+        <result column="run_completed" property="runCompleted" />
+        <result column="remaining" property="remaining" />
+        <result column="created_by" property="createdBy" />
+        <result column="created_date" property="createdDate" />
+
+        <result column="calendar_date" property="calendarDate" />
+        <result column="total" property="total" />
+
+    </resultMap>
+
+    <select id="getTask" resultMap="BaseResultMap">
+         select id,args from amazon_task t where t.remaining &gt; 0 order by t.level desc,t.created_date limit 1
+    </select>
+
+    <update id="updateTaskById">
+        update amazon_task set runing_num = runing_num + 1,remaining = remaining -1 where id = #{id}
+    </update>
+    <update id="completedTaskById">
+        update amazon_task set runing_num = runing_num - 1,run_completed = run_completed + 1 where id = #{taskId}
+    </update>
+
+
+    <insert id="insertTaskRecord"  useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into amazon_task_run
+          (task_id,imei,result_message,result_code,created_time)
+        values
+          (#{taskId},#{imei},"正在执行中",0,now())
+    </insert>
+
+    <update id="updateTaskRecord">
+        update amazon_task_run set result_message=#{resultMessage},result_code=#{resultCode},end_time=now(),consuming=TIMESTAMPDIFF(SECOND,created_time,now()) where id=#{id}
+    </update>
+
+
+    <insert id="insertTask">
+        INSERT INTO amazon_task(args,asin, `level`, site, run_num, runing_num, run_completed, remaining, created_by, created_date)
+        VALUES (
+          #{args},#{asin},#{level},#{site},#{runNum},0,0,#{runNum},#{createdBy},now()
+        )
+    </insert>
+
+    <select id="getTaskList" resultMap="BaseResultMap">
+      select
+          id,args,asin,`level`,site,run_num,runing_num,run_completed,remaining,created_by,created_date
+      from
+          amazon_task
+    </select>
+
+
+    <select id="indexTable" resultType="map">
+
+        <if test="ct==0">
+            select ifnull(count(1),0) AS task_num,ifnull(sum(t.run_num),0) AS run_num from amazon_task t
+        </if>
+        <if test="ct==1">
+            select ifnull(count(1),0) AS today_task_num,ifnull(sum(t.run_num),0) AS today_run_num from amazon_task t WHERE t.created_date > CURDATE()
+        </if>
+        <if test="ct==2">
+            select ifnull(count(1),0) AS lastday_task_num,ifnull(sum(t.run_num),0) AS lastday_run_num from amazon_task t WHERE t.created_date between DATE_SUB(CURDATE(),INTERVAL 1 DAY) AND CURDATE()
+        </if>
+        <if test="ct==3">
+            select ifnull(count(1),0) AS week_task_num,ifnull(sum(t.run_num),0) AS week_run_num from amazon_task t WHERE DATE_FORMAT(t.created_date,'%Y-%u') = DATE_FORMAT(CURDATE(),'%Y-%u')
+        </if>
+        <if test="ct==4">
+            select ifnull(count(1),0) AS month_task_num,ifnull(sum(t.run_num),0) AS month_run_num from amazon_task t WHERE DATE_FORMAT(t.created_date,'%Y-%m') = DATE_FORMAT(CURDATE(),'%Y-%m')
+        </if>
+
+        <if test="ct==5">
+            select ifnull(count(1),0) AS completed from amazon_task_run t WHERE t.end_time IS not null
+        </if>
+        <if test="ct==6">
+            select ifnull(count(1),0) AS today_completed from amazon_task_run t WHERE t.end_time > CURDATE()
+        </if>
+        <if test="ct==7">
+            select ifnull(count(1),0) AS lastday_completed from amazon_task_run t WHERE t.end_time between DATE_SUB(CURDATE(),INTERVAL 1 DAY) AND CURDATE()
+        </if>
+        <if test="ct==8">
+            select ifnull(count(1),0) AS week_completed from amazon_task_run t WHERE DATE_FORMAT(t.end_time,'%Y-%u') = DATE_FORMAT(CURDATE(),'%Y-%u')
+        </if>
+        <if test="ct==9">
+            select ifnull(count(1),0) AS month_completed from amazon_task_run t WHERE DATE_FORMAT(t.end_time,'%Y-%m') = DATE_FORMAT(CURDATE(),'%Y-%m')
+        </if>
+
+
+    </select>
+
+    <select id="indexChart" resultMap="BaseResultMap">
+        select t1.calendar_date,ifnull(t.c,0) total from
+        (
+            select tsc.calendar_date
+            from tb_system_calendar tsc
+            where tsc.calendar_date
+            BETWEEN DATE_SUB(CURDATE(),INTERVAL 31 DAY) AND CURDATE()
+        ) t1
+        LEFT JOIN
+        (
+            select
+                DATE_FORMAT(atr.end_time,'%Y-%m-%d') as end_time,count(1) c
+            from
+                amazon_task_run atr
+                WHERE
+                  atr.end_time is not null
+                <if test="resultCode != null and resultCode != ''">
+                    and result_code=#{resultCode}
+                </if>
+
+        group by DATE_FORMAT(atr.end_time,'%Y-%m-%d')
+        ) t on t1.calendar_date=t.end_time
+        order by t1.calendar_date
+    </select>
+
+</mapper>
