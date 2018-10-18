@@ -2,10 +2,7 @@ package com.zteek.controller;
 
 import com.zteek.entity.IpPool;
 import com.zteek.service.IpPoolService;
-import com.zteek.utils.IPUtil;
-import com.zteek.utils.MD5;
-import com.zteek.utils.ProxyMessage;
-import com.zteek.utils.ReturnResult;
+import com.zteek.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
-
-import static com.zteek.utils.IPUtil.vps;
 
 @RestController
 @RequestMapping("amazon")
@@ -156,7 +151,7 @@ public class AmazonController {
      */
     @RequestMapping("recordVpsState")
     public void recordVpsState(String vps,boolean state){
-        IPUtil.vps_state.put(vps,state);
+        Constant.vps_state.put(vps,state);
     }
     /**
      * 保存IP
@@ -200,11 +195,8 @@ public class AmazonController {
                 ipUtil.changVpsIp(ip);
             }else if(1 == i){
                 changeIpSucess(vps, ipPool);
-
             }
         }
-        //打印空行，隔开日志
-        System.out.println();
     }
 
     /**
@@ -214,17 +206,22 @@ public class AmazonController {
      */
     private void changeIpSucess(String vps, IpPool ipPool) {
         //VPS更换IP成功，修改状态
-        IPUtil.vps_state.put(vps,false);
+        Constant.vps_state.put(vps,false);
 
         //获取VPS前一个IP
-        String preIp = IPUtil.vps.get(vps);
+        String preIp = Constant.vps.get(vps);
 
         //清空 前一个IP 防止内存泄漏
-        IPUtil.use.remove(preIp);
+        Constant.use.remove(preIp);
 
         //将VPS的当前IP 写入内存
-        IPUtil.vps.put(vps,ipPool.getIp());
-        IPUtil.vps_detail.put(vps,ipPool);
+        Constant.vps.put(vps,ipPool.getIp());
+        Constant.vps_detail.put(vps,ipPool);
+
+        //如果是新加入的，服务器一开始没有加载到
+        if(!Constant.vps_change.containsKey(vps)){
+            Constant.vps_change.put(vps,IPUtil.DEFAULT_COUNT);
+        }
     }
 
     /**
@@ -233,7 +230,7 @@ public class AmazonController {
      */
     @RequestMapping("getIP")
     public Object getIP(){
-        return vps;
+        return Constant.vps;
     }
 
     /**
@@ -244,15 +241,15 @@ public class AmazonController {
     public Object setChangCount(int cc,String vps){
         //如果 没有传 VPS 说明 修改 全部
         if(StringUtils.isEmpty(vps)){
-            for(Map.Entry<String,Integer> map : IPUtil.vps_change.entrySet()){
+            for(Map.Entry<String,Integer> map : Constant.vps_change.entrySet()){
                 logger.info("1修改VPS[{}]最大使用次数[{}]",map.getKey(),cc);
                 map.setValue(cc);
             }
         }else {
             logger.info("2修改VPS[{}]最大使用次数[{}]",vps,cc);
-            IPUtil.vps_change.put(vps,cc);
+            Constant.vps_change.put(vps,cc);
         }
-       return IPUtil.vps_change;
+       return Constant.vps_change;
     }
 
     /**
@@ -261,7 +258,7 @@ public class AmazonController {
      */
     @RequestMapping("getChangCount")
     public Object getChangCount(){
-        return IPUtil.vps_change;
+        return Constant.vps_change;
     }
 
     /**
@@ -270,7 +267,7 @@ public class AmazonController {
      */
     @RequestMapping("getCurrentCount")
     public Object getCurrentCount(){
-        return IPUtil.use;
+        return Constant.use;
     }
 
 

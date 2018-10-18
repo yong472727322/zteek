@@ -32,7 +32,7 @@ public class IPUtil implements CommandLineRunner {
     /**
      * 默认 重拨 计数器
      */
-    private static final int DEFAULT_COUNT = 5;
+    public static final int DEFAULT_COUNT = 5;
 
     /**
      * 更换IP标识，true：VPS正在重新拨号
@@ -41,34 +41,6 @@ public class IPUtil implements CommandLineRunner {
 
     private int changCount = DEFAULT_COUNT;
 
-    /**
-     * 存放 VPS 及其 对应的 IP
-     *  格式： <VPS1,IP1>,<VPS2,IP3>
-     */
-    public static Map<String,String> vps = new HashMap<>();
-    /**
-     * 存放 VPS 详细 信息
-     *  格式：<VPS1,ipPool>
-     */
-    public static Map<String,IpPool> vps_detail = new HashMap<>();
-
-    /**
-     * 存放 IP 使用记录
-     *    格式：  <IP1，<手机1，时间1>>
-     */
-    public static Map<String,Map<String,Date>> use = new HashMap<>();
-
-    /**
-     * 存放 VPS 更换 计数器
-     *    格式：   <VPS1,5>    <VPS2,3>
-     */
-    public static Map<String,Integer> vps_change = new HashMap<>();
-
-    /**
-     * 存放 VPS 状态    true:更换IP中，false:正常使用
-     *    格式：   <VPS1,更换IP中>    <VPS2,false>
-     */
-    public static Map<String,Boolean> vps_state = new HashMap<>();
 
     public static String getIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
@@ -95,6 +67,7 @@ public class IPUtil implements CommandLineRunner {
      * @return
      */
     public boolean changIp(boolean flag,String imei) {
+//  todo      换代理之前，先判断有没有未使用过的代理
         /**
          * 根据手机识别码  找出 使用的IP 及 VPS
          */
@@ -104,7 +77,7 @@ public class IPUtil implements CommandLineRunner {
         //手机使用的IP
         String useIp = null;
         //遍历 所有 IP 的 使用记录 ，找到 当前手机
-        for(Map.Entry<String,Map<String,Date>> map :use.entrySet()){
+        for(Map.Entry<String,Map<String,Date>> map : Constant.use.entrySet()){
             //使用该IP的手机集合
             Map<String, Date> value = map.getValue();
             //遍历集合
@@ -116,11 +89,11 @@ public class IPUtil implements CommandLineRunner {
                     //手机当前IP
                     useIp = map.getKey();
                     //是当前手机，遍历 VPS ，根据IP找到对应的VPS
-                    for(Map.Entry<String,String> vps1 : vps.entrySet()){
+                    for(Map.Entry<String,String> vps : Constant.vps.entrySet()){
                         //vps1 当前 IP
-                        String vpsCurrentIP = vps1.getValue();
+                        String vpsCurrentIP = vps.getValue();
                         if(useIp.equalsIgnoreCase(vpsCurrentIP)){
-                            useVps = vps1.getKey();
+                            useVps = vps.getKey();
                             break;
                         }
                     }
@@ -134,10 +107,10 @@ public class IPUtil implements CommandLineRunner {
         }
 
         //获取当前VPS的 目标数量
-        Integer targetNum = vps_change.get(useVps);
+        Integer targetNum = Constant.vps_change.get(useVps);
 
         //获取当前VPS的 实际数量
-        Map<String, Date> useRecord = use.get(vps.get(useVps));
+        Map<String, Date> useRecord = Constant.use.get(Constant.vps.get(useVps));
         int currentNum = useRecord.size();
 
         log.info("手机[{}][{}]请求换VPS[{}]的IP，目标数量[{}]，实际数量[{}]",imei,flag==true?"主动":"被动",useVps,targetNum,currentNum);
@@ -202,9 +175,10 @@ public class IPUtil implements CommandLineRunner {
         //获取所有VPS在数据库的最新IP，设置 VPS 最大使用次数
         List<IpPool> vpsNewIps = ipPoolService.getVpsNewIps();
         for(IpPool ipPool : vpsNewIps){
-            vps_detail.put(ipPool.getVps(),ipPool);
-            vps.put(ipPool.getVps(),ipPool.getIp());
-            vps_change.put(ipPool.getVps(),changCount);
+            //todo 验证VPS 是否可用 使用最新的IP发送 GET请求 到 VPS 如果通，说明可用，否则，不可用，不加入
+            Constant.vps_detail.put(ipPool.getVps(),ipPool);
+            Constant.vps.put(ipPool.getVps(),ipPool.getIp());
+            Constant.vps_change.put(ipPool.getVps(),changCount);
         }
         execShell(" /root/init-server.sh 127.0.0.1");
         log.info("服务器启动完成");

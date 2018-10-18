@@ -4,6 +4,7 @@ import com.zteek.entity.IpPool;
 import com.zteek.entity.IpRecord;
 import com.zteek.mapper.IpPoolMapper;
 import com.zteek.service.IpPoolService;
+import com.zteek.utils.Constant;
 import com.zteek.utils.IPUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,14 +69,14 @@ public class IpPoolServiceImpl implements IpPoolService {
 
         //遍历 VPS ，找到未使用过的IP
         String notUseIp = null;
-        for(Map.Entry<String,String> vps : IPUtil.vps.entrySet()){
+        for(Map.Entry<String,String> vps : Constant.vps.entrySet()){
             //想用的IP，判断是否存在使用记录
             String ip = vps.getValue();
             boolean flag = true;
-            Map<String, Map<String, Date>> use = IPUtil.use;
+            Map<String, Map<String, Date>> use = Constant.use;
             if(use.size() > 0){
                 Map<String, Date> stringDateMap = use.get(ip);
-                if(stringDateMap.size() > 0){
+                if(null != stringDateMap && stringDateMap.size() > 0){
                     for(Map.Entry<String,Date> use2 : stringDateMap.entrySet()){
                         String key = use2.getKey();
                         if(imei.equalsIgnoreCase(key)){
@@ -110,7 +111,7 @@ public class IpPoolServiceImpl implements IpPoolService {
 
         //遍历所有的VPS，找到 该IP对应的VPS
         String notUseVps = null;
-        for(Map.Entry<String,String> map : IPUtil.vps.entrySet()){
+        for(Map.Entry<String,String> map : Constant.vps.entrySet()){
             if(notUseIp.equalsIgnoreCase(map.getValue())){
                 notUseVps = map.getKey();
                 break;
@@ -118,14 +119,14 @@ public class IpPoolServiceImpl implements IpPoolService {
         }
         log.info("遍历所有的VPS，找到 该IP[{}]对应的VPS，结果：[{}]",notUseIp,notUseVps);
         if(null != notUseVps){
-            IpPool ipPool = IPUtil.vps_detail.get(notUseVps);
+            IpPool ipPool = Constant.vps_detail.get(notUseVps);
             //插入一条使用记录
             int i = this.insertUseRecord(ipPool.getId(), ipPool.getIp(), imei);
             if(i > 0){
                 log.info("插入一条使用记录，结果：[{}]",i);
                 Map<String,Date> map = new HashMap<>(3);
                 map.put(imei,new Date());
-                IPUtil.use.put(notUseIp,map);
+                Constant.use.put(notUseIp,map);
                 return ipPool;
             }
             return null;

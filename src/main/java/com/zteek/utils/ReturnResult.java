@@ -7,8 +7,8 @@ public class ReturnResult {
     private Object object;
 
     public ReturnResult() {
-        this.code = "0000";
-        this.message="success";
+        this.code = Constant.CODE_SUCCESS;
+        this.message = Constant.SUCCESS;
     }
 
     public String getCode() {
