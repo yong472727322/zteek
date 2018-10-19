@@ -60,5 +60,9 @@ public class Constant {
      * 任务计数器
      */
     public static Integer task_counter = 0;
+    /**
+     * 最大计数
+     */
+    public static final Integer MAX_TASK_COUNTER = 100;
 
 }

@@ -74,6 +74,10 @@ public class TaskServiceImpl implements TaskService {
         taskMapper.insertTaskRecord(atr);
         //返回任务
         atr.setArgs(task.getArgs());
+        //如果计数器大于100，重置，防止太大
+        if(Constant.task_counter > Constant.MAX_TASK_COUNTER){
+            Constant.task_counter = 0;
+        }
         return atr;
     }
 
