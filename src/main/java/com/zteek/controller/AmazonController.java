@@ -1,16 +1,21 @@
 package com.zteek.controller;
 
+import com.zteek.entity.AmazonTask;
 import com.zteek.entity.IpPool;
+import com.zteek.service.AccountService;
 import com.zteek.service.IpPoolService;
+import com.zteek.service.TaskService;
 import com.zteek.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -23,6 +28,10 @@ public class AmazonController {
     private IPUtil ipUtil;
     @Autowired
     private IpPoolService ipPoolService;
+    @Autowired
+    private TaskService taskService;
+    @Autowired
+    private AccountService accountService;
 
     /**
      * 获取代理
@@ -200,6 +209,16 @@ public class AmazonController {
     }
 
     /**
+     * 记录手机日志
+     * @return
+     */
+    @RequestMapping("recordLog")
+    public void recordLog(String imei,String message){
+        logger.info("记录手机[{}]发送过来的日志[{}]",imei,message);
+        accountService.recordLog(imei,message);
+    }
+
+    /**
      * VPS修改IP成功之后所需的步骤
      * @param vps
      * @param ipPool
@@ -269,6 +288,59 @@ public class AmazonController {
     public Object getCurrentCount(){
         return Constant.use;
     }
+
+    /**
+     * 修改同时执行的任务个数
+     */
+    @RequestMapping("changeMaxTaskNum")
+    public Object changeMaxTaskNum(int max){
+        //清空 内存中的任务
+        Constant.tasks.clear();
+        //重新 从数据库中查询
+        List<AmazonTask> tasks = taskService.getTasks(max);
+        for(AmazonTask task : tasks){
+            Constant.tasks.add(task);
+        }
+        return tasks;
+    }
+
+
+    /**
+     * 根据不同参数，获取对应的变量
+     * @param str
+     * @return
+     */
+    @RequestMapping("getCurrentCount/{str}")
+    public Object getCommon(@PathVariable("str") String str){
+        Object obj;
+        switch (str){
+            case "use" :
+                obj = Constant.use;
+                break;
+            case "task_counter":
+                obj = Constant.task_counter;
+                break;
+            case "max_task_num":
+                obj = Constant.max_task_num;
+                break;
+            case "tasks":
+                obj = Constant.tasks;
+                break;
+            case "vps_state":
+                obj = Constant.vps_state;
+                break;
+            case "vps_change":
+                obj = Constant.vps_change;
+                break;
+            case "vps_detail":
+                obj = Constant.vps_detail;
+                break;
+            default:
+                obj = Constant.vps;
+        }
+        return obj;
+    }
+
 
 
 }

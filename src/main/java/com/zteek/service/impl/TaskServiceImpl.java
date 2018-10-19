@@ -4,6 +4,10 @@ import com.zteek.entity.AmazonTask;
 import com.zteek.entity.AmazonTaskRun;
 import com.zteek.mapper.TaskMapper;
 import com.zteek.service.TaskService;
+import com.zteek.utils.Constant;
+import com.zteek.utils.IPUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,27 +18,63 @@ import java.util.Map;
 @Service
 public class TaskServiceImpl implements TaskService {
 
+    private static Logger log = LoggerFactory.getLogger(TaskService.class);
+
     @Autowired
     private TaskMapper taskMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AmazonTaskRun getTask(String imei) {
-        //先取一个未完成的任务
-        AmazonTask at = taskMapper.getTask();
-        if(null != at.getId()){
-            //更新任务数
-            taskMapper.updateTaskById(at.getId());
-            //写记录表
-            AmazonTaskRun atr = new AmazonTaskRun();
-            atr.setTaskId(at.getId());
-            atr.setImei(imei);
-            taskMapper.insertTaskRecord(atr);
-            //返回任务
-            atr.setArgs(at.getArgs());
-            return atr;
+
+        //任务个数
+        int size = Constant.tasks.size();
+        log.info("手机[{}]获取任务，当前内存任务个数[{}]",imei,size);
+        if(size < 1){
+            //没有任务
+            return null;
         }
-        return null;
+        int cc = 0;
+        //循环获取，防止获取到的任务已经执行完成，但是内存没有更新
+        AmazonTask task = null;
+        while(cc < size){
+            int i = Constant.task_counter % size;
+            //从内存中获取一个任务
+            task = Constant.tasks.get(i);
+            log.info("第[{}]次从内存中获取第[{}]个任务，获取到任务[{}]",cc,i,task.getId());
+            //计数器+1
+            Constant.task_counter ++;
+
+            //判断任务是否已经完成了
+            if(task.getRemaining() <= 0 || task.getRunNum() <= task.getRunCompleted()){
+                //任务已经完成，从内存中删除
+                log.info("任务[{}]已经完成，从内存中删除",task.getId());
+                Constant.tasks.remove(task);
+                task = null;
+                cc ++;
+            }else {
+                cc = size + 1;
+            }
+        }
+
+        if(null == task){
+            return null;
+        }
+
+        //修改任务执行数量的情况
+        task.setRemaining(task.getRemaining()-1);
+        task.setRunCompleted(task.getRunCompleted()+1);
+
+        //更新任务数
+        taskMapper.updateTaskById(task.getId());
+        //写记录表
+        AmazonTaskRun atr = new AmazonTaskRun();
+        atr.setTaskId(task.getId());
+        atr.setImei(imei);
+        taskMapper.insertTaskRecord(atr);
+        //返回任务
+        atr.setArgs(task.getArgs());
+        return atr;
     }
 
     @Override
@@ -65,5 +105,13 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Map<String, Integer> indexTable(int i) {
         return taskMapper.indexTable(i);
+    }
+
+    @Override
+    public List<AmazonTask> getTasks(Integer maxTaskNum) {
+        if(null == maxTaskNum || maxTaskNum < 1){
+            maxTaskNum = Constant.max_task_num;
+        }
+        return taskMapper.getTasks(maxTaskNum);
     }
 }

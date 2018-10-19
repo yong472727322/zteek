@@ -37,4 +37,11 @@ public interface TaskService {
      * @return
      */
     Map<String, Integer> indexTable(int i);
+
+    /**
+     * 按照级别倒序、创建时间升序，获取指定数量任务
+     * @param maxTaskNum
+     * @return
+     */
+    List<AmazonTask> getTasks(Integer maxTaskNum);
 }

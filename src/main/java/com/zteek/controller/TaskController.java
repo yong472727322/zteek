@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
@@ -187,13 +188,7 @@ public class TaskController {
             return null;
         }
         String path = apkPath + apkName;
-        File file = null;
-        try {
-            file = new File(path);
-        }catch (Exception e){
-            logger.warn("文件[{}]不存在",apkName);
-            return null;
-        }
+        File file = new File(path);
         HttpHeaders headers = new HttpHeaders();
         String fileName= null;
         try {
@@ -206,6 +201,8 @@ public class TaskController {
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         try {
             return new ResponseEntity<>(FileUtils.readFileToByteArray(file), headers, HttpStatus.CREATED);
+        } catch (FileNotFoundException e) {
+            logger.warn("文件[{}]不存在",apkName);
         } catch (IOException e) {
             logger.warn("文件[{}]下载失败。原因：[{}]",apkName,e);
         }

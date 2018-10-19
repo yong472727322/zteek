@@ -20,8 +20,12 @@
 
     </resultMap>
 
-    <select id="getTask" resultMap="BaseResultMap">
-         select id,args from amazon_task t where t.remaining &gt; 0 order by t.level desc,t.created_date limit 1
+    <!-- 按照级别倒序、创建时间升序，获取指定数量任务 by:leo,at:2018/10/18 -->
+    <select id="getTasks" resultMap="BaseResultMap">
+         select id,args,run_num,run_completed,remaining from amazon_task t where t.remaining &gt; 0 order by t.level desc,t.created_date
+        <if test="maxTaskNum != null and maxTaskNum != ''">
+            LIMIT #{maxTaskNum}
+        </if>
     </select>
 
     <update id="updateTaskById">
@@ -56,6 +60,7 @@
           id,args,asin,`level`,site,run_num,runing_num,run_completed,remaining,created_by,created_date
       from
           amazon_task
+
     </select>
 
 

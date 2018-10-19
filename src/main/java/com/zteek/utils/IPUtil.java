@@ -1,7 +1,9 @@
 package com.zteek.utils;
 
+import com.zteek.entity.AmazonTask;
 import com.zteek.entity.IpPool;
 import com.zteek.service.IpPoolService;
+import com.zteek.service.TaskService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -19,14 +21,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.NoRouteToHostException;
 import java.net.SocketTimeoutException;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class IPUtil implements CommandLineRunner {
 
     @Autowired
     private IpPoolService ipPoolService;
+    @Autowired
+    private TaskService taskService;
 
     private static Logger log = LoggerFactory.getLogger(IPUtil.class);
     /**
@@ -142,6 +149,8 @@ public class IPUtil implements CommandLineRunner {
             httpGet.setConfig(requestConfig);
             log.info("发送GET请求到[{}]", url);
             httpCilent.execute(httpGet);
+        } catch (NoRouteToHostException e) {
+            log.warn("主机[{}]访问失败，可能VPS正在切换中。。。[{}]",vpsIp,e.getMessage());
         } catch (SocketTimeoutException e) {
             log.warn("超时，说明向VPS[{}]发送更换IP的命令成功（VPS切换IP中）",vpsIp);
         } catch (IOException e) {
@@ -179,6 +188,10 @@ public class IPUtil implements CommandLineRunner {
             Constant.vps_detail.put(ipPool.getVps(),ipPool);
             Constant.vps.put(ipPool.getVps(),ipPool.getIp());
             Constant.vps_change.put(ipPool.getVps(),changCount);
+        }
+        List<AmazonTask> tasks = taskService.getTasks(Constant.max_task_num);
+        for(AmazonTask task : tasks){
+            Constant.tasks.add(task);
         }
         execShell(" /root/init-server.sh 127.0.0.1");
         log.info("服务器启动完成");

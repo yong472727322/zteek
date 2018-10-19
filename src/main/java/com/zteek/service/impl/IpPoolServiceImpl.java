@@ -19,7 +19,7 @@ import java.util.Map;
 @Service
 public class IpPoolServiceImpl implements IpPoolService {
 
-    private static Logger log = LoggerFactory.getLogger(IPUtil.class);
+    private static Logger log = LoggerFactory.getLogger(IpPoolService.class);
 
     @Autowired
     private IpPoolMapper ipPoolMapper;

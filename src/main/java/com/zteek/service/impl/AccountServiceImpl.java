@@ -34,4 +34,10 @@ public class AccountServiceImpl implements AccountService {
         accountMapper.updateResultById(account);
         return 1;
     }
+
+    @Override
+    public int recordLog(String imei, String message) {
+
+        return accountMapper.recordLog(imei,message);
+    }
 }

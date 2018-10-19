@@ -3,9 +3,7 @@ package com.zteek.utils;
 import com.zteek.entity.AmazonTask;
 import com.zteek.entity.IpPool;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 常量
@@ -49,8 +47,18 @@ public class Constant {
 
     /**
      * 存放 同时执行的任务
-     *
+     *  格式：<任务详情>
      */
-    public static Map<Integer,AmazonTask> tasks = new HashMap<>(16);
+    public static List<AmazonTask> tasks = new ArrayList<>(16);
+
+    /**
+     * 同时最大执行任务数
+     */
+    public static Integer max_task_num = 3;
+
+    /**
+     * 任务计数器
+     */
+    public static Integer task_counter = 0;
 
 }

@@ -9,7 +9,8 @@ import java.util.Map;
 
 public interface TaskMapper {
 
-    public AmazonTask getTask();
+    public List<AmazonTask> getTasks(@Param("maxTaskNum") Integer maxTaskNum);
+
     public int updateTaskById(@Param("id") Long id);
 
     int insertTaskRecord(AmazonTaskRun atr);

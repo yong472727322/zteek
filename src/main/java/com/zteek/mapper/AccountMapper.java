@@ -10,4 +10,6 @@ public interface AccountMapper {
     int updateImeiById(@Param("id") Long id,@Param("imei") String imei);
 
     int updateResultById(Account account);
+
+    int recordLog(@Param("imei") String imei, @Param("message") String message);
 }

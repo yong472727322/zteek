@@ -14,6 +14,12 @@
         <result column="regist_result" property="registResult" />
     </resultMap>
 
+    <!-- 记录手机日志 by:leo,at:2018/10/18 -->
+    <insert id="recordLog">
+        INSERT into phone_log(imei,message,created_time)
+        VALUES (#{imei},#{message},now())
+    </insert>
+
     <select id="getAccountByImei" resultMap="BaseResultMap">
         SELECT
             t1.id,t1.username,t1.email,t1.password
