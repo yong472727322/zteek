@@ -3,6 +3,7 @@ package com.zteek.service;
 import com.zteek.entity.PhoneLog;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,9 +16,10 @@ public interface PhoneService {
      * 保存手机日志信息
      * @param imei
      * @param message
+     * @param createdTime
      * @return
      */
-    int recordLog(String imei, String message);
+    int recordLog(String imei, String message, Date createdTime);
 
     /**
      * 根据 imei 获取 其最新的一条日志

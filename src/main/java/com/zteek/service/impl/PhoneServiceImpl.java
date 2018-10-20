@@ -6,6 +6,7 @@ import com.zteek.service.PhoneService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -20,8 +21,11 @@ public class PhoneServiceImpl implements PhoneService {
     private PhoneMapper phoneMapper;
 
     @Override
-    public int recordLog(String imei, String message) {
-        return phoneMapper.recordLog(imei,message);
+    public int recordLog(String imei, String message, Date createdTime) {
+        if(null == createdTime){
+            createdTime = new Date();
+        }
+        return phoneMapper.recordLog(imei,message,createdTime);
     }
 
     @Override

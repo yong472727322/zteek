@@ -12,7 +12,7 @@
     <!-- 记录手机日志 by:leo,at:2018/10/18 -->
     <insert id="recordLog">
         INSERT into phone_log(imei,message,created_time)
-        VALUES (#{imei},#{message},now())
+        VALUES (#{imei},#{message},#{createdTime})
     </insert>
 
     <!-- 获取最新的一条日志或大于指定ID的日志 by:leo,at:2018/10/20 -->

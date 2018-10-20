@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -213,9 +214,9 @@ public class AmazonController {
      * @return
      */
     @RequestMapping("recordLog")
-    public void recordLog(String imei,String message){
+    public void recordLog(String imei, String message, Date createdTime){
         logger.info("记录手机[{}]发送过来的日志[{}]",imei,message);
-        phoneService.recordLog(imei,message);
+        phoneService.recordLog(imei,message,createdTime);
     }
 
     /**

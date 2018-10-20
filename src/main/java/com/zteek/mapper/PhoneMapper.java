@@ -3,6 +3,7 @@ package com.zteek.mapper;
 import com.zteek.entity.PhoneLog;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * @date 2018/10/20 09:57
  */
 public interface PhoneMapper {
-    int recordLog(@Param("imei") String imei, @Param("message") String message);
+    int recordLog(@Param("imei") String imei, @Param("message") String message,@Param("createdTime")  Date createdTime);
 
     /**
      * 获取最新的一条日志或大于指定ID的日志
