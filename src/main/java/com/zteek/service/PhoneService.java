@@ -14,12 +14,9 @@ import java.util.List;
 public interface PhoneService {
     /**
      * 保存手机日志信息
-     * @param imei
-     * @param message
-     * @param createdTime
      * @return
      */
-    int recordLog(String imei, String message, Date createdTime);
+    int recordLog(PhoneLog log);
 
     /**
      * 根据 imei 获取 其最新的一条日志
@@ -42,4 +39,5 @@ public interface PhoneService {
      * @return
      */
     List<PhoneLog> getRecentlyLog(@Param("recentlyMinute") int recentlyMinute);
+
 }

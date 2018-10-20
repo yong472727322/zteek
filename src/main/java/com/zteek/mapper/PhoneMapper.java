@@ -11,8 +11,6 @@ import java.util.List;
  * @date 2018/10/20 09:57
  */
 public interface PhoneMapper {
-    int recordLog(@Param("imei") String imei, @Param("message") String message,@Param("createdTime")  Date createdTime);
-
     /**
      * 获取最新的一条日志或大于指定ID的日志
      * @param imei
@@ -26,4 +24,11 @@ public interface PhoneMapper {
      * @return
      */
     List<PhoneLog> getRecentlyLog(@Param("recentlyMinute") int recentlyMinute);
+
+    /**
+     * 保存日志
+     * @param log
+     * @return
+     */
+    int recordLog(PhoneLog log);
 }

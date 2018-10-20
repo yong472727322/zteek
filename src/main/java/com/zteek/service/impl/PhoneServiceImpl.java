@@ -22,16 +22,16 @@ public class PhoneServiceImpl implements PhoneService {
     private PhoneMapper phoneMapper;
 
     @Override
-    public int recordLog(String imei, String message, Date createdTime) {
-        if(!StringUtils.isEmpty(message)){
+    public int recordLog(PhoneLog log) {
+        if(!StringUtils.isEmpty(log.getMessage())){
             //防止过长报错
-            message = message.substring(0,254);
+            log.setMessage(log.getMessage().substring(0,254));
         }
-        if(null == createdTime){
+        if(null == log.getCreatedTime()){
             //设置 默认 当前时间
-            createdTime = new Date();
+            log.setCreatedTime(new Date());
         }
-        return phoneMapper.recordLog(imei,message,createdTime);
+        return phoneMapper.recordLog(log);
     }
 
     @Override
