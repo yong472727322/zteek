@@ -30,22 +30,17 @@
         </if>
     </select>
 
-    <!-- 获取最近10分钟有日志的手机 by:leo,at:2018/10/20 -->
+    <!-- 获取最近n分钟有日志的手机 by:leo,at:2018/10/20 -->
     <select id="getRecentlyLog" resultMap="BaseResultMap">
-        select * FROM
-            (
-                SELECT
-                    t.id,
-                    t.imei,
-                    t.message,
-                    t.created_time
-                FROM
-                    phone_log t
-                WHERE
-                    t.created_time &gt; DATE_SUB(now(),INTERVAL ${recentlyMinute} MINUTE)
-                order by t.created_time DESC
-            ) t1
-        group by t1.imei
+
+      SELECT * FROM (
+          SELECT * FROM phone_log
+          WHERE
+            t.created_time &gt; DATE_SUB(now(),INTERVAL ${recentlyMinute} MINUTE)
+          ORDER BY id DESC LIMIT 1000
+          ) t
+      GROUP BY  t.imei ORDER BY t.id DESC
+
     </select>
 
 
