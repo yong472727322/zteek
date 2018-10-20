@@ -3,6 +3,7 @@ package com.zteek.service.impl;
 import com.zteek.entity.PhoneLog;
 import com.zteek.mapper.PhoneMapper;
 import com.zteek.service.PhoneService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,12 @@ public class PhoneServiceImpl implements PhoneService {
 
     @Override
     public int recordLog(String imei, String message, Date createdTime) {
+        if(!StringUtils.isEmpty(message)){
+            //防止过长报错
+            message = message.substring(0,254);
+        }
         if(null == createdTime){
+            //设置 默认 当前时间
             createdTime = new Date();
         }
         return phoneMapper.recordLog(imei,message,createdTime);
