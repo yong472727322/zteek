@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zteek.mapper.PhoneMapper" >
+
+    <resultMap id="BaseResultMap" type="com.zteek.entity.PhoneLog" >
+        <id column="id" property="id"/>
+        <result column="imei" property="imei" />
+        <result column="message" property="message" />
+        <result column="created_time" property="createdTime" />
+    </resultMap>
+
+    <!-- 记录手机日志 by:leo,at:2018/10/18 -->
+    <insert id="recordLog">
+        INSERT into phone_log(imei,message,created_time)
+        VALUES (#{imei},#{message},now())
+    </insert>
+
+    <!-- 获取最新的一条日志或大于指定ID的日志 by:leo,at:2018/10/20 -->
+    <select id="getNewLogByImei" resultMap="BaseResultMap">
+        select id,imei,message,created_time
+        FROM phone_log
+        WHERE
+            imei=#{imei}
+            <if test="id != null and id != ''">
+                and id &gt; #{id}
+            </if>
+        order by created_time desc
+        <if test="id == null or id == ''">
+            limit 1
+        </if>
+    </select>
+
+    <!-- 获取最近10分钟有日志的手机 by:leo,at:2018/10/20 -->
+    <select id="getRecentlyLog" resultMap="BaseResultMap">
+        select * FROM
+            (
+                SELECT
+                    t.id,
+                    t.imei,
+                    t.message,
+                    t.created_time
+                FROM
+                    phone_log t
+                WHERE
+                    t.created_time &gt; DATE_SUB(now(),INTERVAL ${recentlyMinute} MINUTE)
+                order by t.created_time DESC
+            ) t1
+        group by t1.imei
+    </select>
+
+
+</mapper>

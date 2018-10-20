@@ -29,6 +29,11 @@
         ORDER BY t1.id LIMIT 1
     </select>
 
+    <!-- 获取最新的一条日志 by:leo,at:2018/10/19 -->
+    <select id="getNewLogByImei" resultType="com.zteek.entity.PhoneLog">
+        select id,imei,message,created_time AS createdTime FROM phone_log WHERE imei=#{imei} order by created_time desc limit 1
+    </select>
+
     <update id="updateImeiById">
         update account set imei=#{imei},status=1,update_time=now() where id=#{id}
     </update>

@@ -3,8 +3,10 @@ package com.zteek.admin;
 import com.alibaba.fastjson.JSONObject;
 import com.zteek.entity.AmazonTask;
 import com.zteek.entity.DatatablesView;
+import com.zteek.entity.PhoneLog;
 import com.zteek.entity.User;
 import com.zteek.exception.BusinessException;
+import com.zteek.service.PhoneService;
 import com.zteek.service.TaskService;
 import com.zteek.service.UserService;
 import com.zteek.utils.Constant;
@@ -38,6 +40,9 @@ public class AdminController {
     private UserService userService;
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private PhoneService phoneService;
+
     @Value("${apk.path}")
     private String apkPath;
 
@@ -217,4 +222,42 @@ public class AdminController {
         }
         return i;
     }
+
+
+    @GetMapping("toLog")
+    public String toLog(ModelMap map){
+        //查询最近10分钟内有日志的手机
+        List<PhoneLog> phones = phoneService.getRecentlyLog(10);
+        map.addAttribute("phones",phones);
+        return "log";
+    }
+    /**
+     * 查询手机日志
+     * @param imei
+     * @return
+     */
+    @ResponseBody
+    @GetMapping("log")
+    public ReturnResult log(String imei,Long id){
+        ReturnResult rr = new ReturnResult();
+        try{
+            if(null == id){
+                PhoneLog log = phoneService.getNewLogByImei(imei);
+                rr.setObject(log);
+            }else {
+                List<PhoneLog> logs = phoneService.getNewLogs(imei,id);
+                rr.setObject(logs);
+            }
+        }catch (BusinessException be){
+            rr.setCode(Constant.CODE_FAIL);
+            rr.setMessage(Constant.FAIL);
+            rr.setObject(be.getMessage());
+        }catch (Exception e){
+            rr.setCode(Constant.CODE_FAIL);
+            rr.setMessage(Constant.FAIL);
+            rr.setObject("系统错误。");
+        }
+        return rr;
+    }
+
 }

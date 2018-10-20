@@ -3,3 +3,9 @@
 .clear{
     margin: 30px;
 }
+
+
+.div_0{ overflow:hidden; margin:auto;}
+.div_1{ height:300px; border: solid 2px #000000; overflow-y:auto; overflow-x:auto; }
+.div_3{width: 600px;height:670px;float:left;margin-right:10px;}
+.biaoti_1{ height:30px;border: solid 2px #000000; margin-top:20px; text-align:center; margin-left:auto; margin-right:auto;}

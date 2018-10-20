@@ -2,8 +2,8 @@ package com.zteek.controller;
 
 import com.zteek.entity.AmazonTask;
 import com.zteek.entity.IpPool;
-import com.zteek.service.AccountService;
 import com.zteek.service.IpPoolService;
+import com.zteek.service.PhoneService;
 import com.zteek.service.TaskService;
 import com.zteek.utils.*;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +31,7 @@ public class AmazonController {
     @Autowired
     private TaskService taskService;
     @Autowired
-    private AccountService accountService;
+    private PhoneService phoneService;
 
     /**
      * 获取代理
@@ -215,7 +215,7 @@ public class AmazonController {
     @RequestMapping("recordLog")
     public void recordLog(String imei,String message){
         logger.info("记录手机[{}]发送过来的日志[{}]",imei,message);
-        accountService.recordLog(imei,message);
+        phoneService.recordLog(imei,message);
     }
 
     /**

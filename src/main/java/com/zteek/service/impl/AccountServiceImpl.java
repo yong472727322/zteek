@@ -1,6 +1,7 @@
 package com.zteek.service.impl;
 
 import com.zteek.entity.Account;
+import com.zteek.entity.PhoneLog;
 import com.zteek.mapper.AccountMapper;
 import com.zteek.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +36,5 @@ public class AccountServiceImpl implements AccountService {
         return 1;
     }
 
-    @Override
-    public int recordLog(String imei, String message) {
 
-        return accountMapper.recordLog(imei,message);
-    }
 }

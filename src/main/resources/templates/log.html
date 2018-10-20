@@ -1,0 +1,103 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <div th:replace="_meta :: meta"></div>
+    <div th:replace="_meta :: script"></div>
+    <div th:replace="_meta :: link"></div>
+
+    <title>手机日志 - 后台管理系统 v1.0</title>
+    <meta name="keywords" content="H-ui.admin v3.0,H-ui网站后台模版,后台模版下载,后台管理系统模版,HTML后台模版下载">
+    <meta name="description" content="H-ui.admin v3.0，是一款由国人开发的轻量级扁平化网站后台模板，完全免费开源的网站后台管理系统模版，适合中小型CMS后台系统。">
+</head>
+<body>
+    <div th:replace="_header :: header"></div>
+
+    <div th:replace="_menu :: aside"></div>
+
+    <section class="Hui-article-box">
+        <nav class="breadcrumb"><i class="Hui-iconfont"></i> <a href="/" class="maincolor">首页</a>
+            <span class="c-999 en">&gt;</span>
+            <span class="c-666">手机日志</span>
+            <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a>
+        </nav>
+        <div class="Hui-article">
+            <article class="cl pd-20">
+                <div class="clear" />
+
+                <div class="div_0" id="log-container" >
+                    <div class="div_3" th:each="mapS:${phones}" th:id="${mapS.imei}">
+                        <div class="div_1">
+                            <div th:id="${mapS.id}" >
+                                [ [[${#calendars.format(mapS.createdTime,'yyyy-MM-dd HH:mm:ss')}]] ] [[${mapS.message}]]
+                            </div>
+                        </div>
+                        <div class="biaoti_1" th:text="${mapS.imei}" />
+                    </div>
+                </div>
+
+
+                <!--<div>-->
+                <!--　　&lt;!&ndash; 下面div用的是miniui的样式，其他的稍微改变一下即可&ndash;&gt;-->
+                    <!--<div id="ck1" name="product" class="mini-checkbox"  checked = "true" readOnly="false" text="是否滚动"-->
+                         <!--onvaluechanged="onValueChanged" style="left: 20px"></div>-->
+                    <!--<a style="left: 30px;top: 1px" class="mini-button mini-button-info"-->
+                       <!--onclick="clearContext()">清屏</a>-->
+                <!--</div>-->
+            </article>
+            <div th:replace="_footer :: footer"></div>
+        </div>
+    </section>
+
+    <div th:replace="_footer :: script"></div>
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript">
+
+    $(function(){
+
+        $("#log-container").scrollTop($("#log-container div_1").height() - $("#log-container").height());
+
+        //每5秒 获取最新的日志
+        setInterval(getNewLog,5000);
+
+    });
+    
+    function getNewLog() {
+        //获取到所有的DIV
+        var divs = $("#log-container .div_1");
+        //遍历DIV
+        $.each(divs,function(index,data){
+            var THIS = $(this);
+            var pDiv = $(this).parent();
+            //div_1的最后一条 消息
+            var lc = $(this).children("div:last-child");
+            //发送AJAX请求，获取最新的一条日志
+            $.get("/admin/log",{"imei":pDiv.attr("id"),"id":$(lc).attr("id")},function(result){
+                if("0000" == result.code && "success" == result.message){
+
+                    var obj = result.object;
+                    if(obj.length > 0){
+                        var obj1=obj.reverse();
+                        $.each(obj1,function(i,d){
+                            var showimg = "<div id='"+d.id+"'>[ "+d.createdTime+" ] "+d.message+"</div>";
+                            $(THIS).append(showimg);
+
+                            $(THIS).scrollTop($(THIS)[0].scrollHeight);
+//                            $(THIS).scrollHeight();
+//                            var now = new Date();
+//                            var div = document.getElementById('scrolldIV');
+//                            div.innerHTML = div.innerHTML + 'time_' + now.getTime() + '<br />';
+//                            div.scrollTop = div.scrollHeight;
+
+                        });
+                    }
+                }
+            });
+        });
+    }
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+
+</body>
+</html>

@@ -1,6 +1,7 @@
 package com.zteek.mapper;
 
 import com.zteek.entity.Account;
+import com.zteek.entity.PhoneLog;
 import org.apache.ibatis.annotations.Param;
 
 public interface AccountMapper {
@@ -11,5 +12,5 @@ public interface AccountMapper {
 
     int updateResultById(Account account);
 
-    int recordLog(@Param("imei") String imei, @Param("message") String message);
+
 }
