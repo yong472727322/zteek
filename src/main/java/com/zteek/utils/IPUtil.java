@@ -201,6 +201,7 @@ public class IPUtil implements CommandLineRunner {
             Constant.vps_detail.put(ipPool.getVps(),ipPool);
             Constant.vps.put(ipPool.getVps(),ipPool.getIp());
             Constant.vps_change.put(ipPool.getVps(),changCount);
+            Constant.vps_state.put(ipPool.getVps(),false);
         }
         List<AmazonTask> tasks = taskService.getTasks(Constant.max_task_num);
         for(AmazonTask task : tasks){

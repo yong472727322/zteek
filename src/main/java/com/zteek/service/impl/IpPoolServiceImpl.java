@@ -71,8 +71,8 @@ public class IpPoolServiceImpl implements IpPoolService {
         String notUseIp = null;
         for(Map.Entry<String,String> vps : Constant.vps.entrySet()){
             //判断VPS状态
-            if(Constant.vps_state.get(vps)){
-                log.info("VPS[{}]正在更换IP中，不可用。",vps);
+            if(Constant.vps_state.get(vps.getKey())){
+                log.info("VPS[{}]正在更换IP中，不可用。",vps.getKey());
                 continue;
             }
             //想用的IP，判断是否存在使用记录
