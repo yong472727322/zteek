@@ -118,7 +118,17 @@ public class IPUtil implements CommandLineRunner {
 
         //获取当前VPS的 实际数量
         Map<String, Date> useRecord = Constant.use.get(Constant.vps.get(useVps));
-        int currentNum = useRecord.size();
+        //清除 使用时间，标识为 切换IP
+        useRecord.put(useIp,null);
+        log.info("清除手机[{}]使用IP[{}]的时间，标识为 切换IP",imei,useIp);
+        int currentNum = 0;
+        for(Map.Entry<String,Date> map : useRecord.entrySet()){
+            Date value = map.getValue();
+            if(null == value){
+                currentNum ++;
+            }
+        }
+//        int currentNum = useRecord.size();
 
         log.info("手机[{}][{}]请求换VPS[{}]的IP，目标数量[{}]，实际数量[{}]",imei,flag==true?"主动":"被动",useVps,targetNum,currentNum);
 
@@ -130,6 +140,9 @@ public class IPUtil implements CommandLineRunner {
             changVpsIp(useIp);
             //清空计数
             useRecord.clear();
+            //设置VPS不可用
+            Constant.vps_state.put(useVps,true);
+            log.info("设置VPS[{}]不可用",useVps);
             return true;
         }
         return false;
