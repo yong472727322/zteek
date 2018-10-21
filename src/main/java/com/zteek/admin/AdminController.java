@@ -71,7 +71,7 @@ public class AdminController {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute(Constant.user);
         session.removeAttribute(Constant.user);
-        logger.info("用户[{}]登出，重定向到登陆页面",user.getId());
+        logger.info("用户[{}]登出，重定向到登陆页面",user.getName());
         return "redirect:toLogin";
     }
 
