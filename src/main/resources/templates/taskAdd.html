@@ -115,12 +115,12 @@
                 dataType : "json",
                 success : function(data) {
                     var index = parent.layer.getFrameIndex(window.name);
-                    parent.$('.btn-refresh').click();
+                    parent.$('.btn-success')[0].click();
                     parent.layer.close(index);
                 },
                 error:function(data){
                     var index = parent.layer.getFrameIndex(window.name);
-                    parent.$('.btn-refresh').click();
+                    parent.$('.btn-success')[0].click();
                     parent.layer.close(index);
                 }
             });

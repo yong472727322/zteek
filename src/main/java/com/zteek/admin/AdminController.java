@@ -1,6 +1,8 @@
 package com.zteek.admin;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.zteek.entity.AmazonTask;
 import com.zteek.entity.DatatablesView;
 import com.zteek.entity.PhoneLog;
@@ -172,8 +174,11 @@ public class AdminController {
 
     @ResponseBody
     @RequestMapping("taskData")
-    public Object taskData(){
+    public Object taskData(int iDisplayStart,int iDisplayLength){
+        PageHelper.startPage((iDisplayStart/iDisplayLength)+1,iDisplayLength);
         List<AmazonTask> taskList = taskService.getTaskList(null);
+        PageInfo<AmazonTask> pageInfo = new PageInfo<>(taskList);
+
         for(AmazonTask task : taskList){
             String args = task.getArgs();
             JSONObject json = (JSONObject) JSONObject.parse(args);
@@ -183,7 +188,7 @@ public class AdminController {
             task.setProductName(json.get("productName")+"");
         }
         DatatablesView<AmazonTask> dataView = new DatatablesView<>();
-        dataView.setRecordsTotal(taskList.size());
+        dataView.setRecordsTotal(Integer.parseInt(pageInfo.getTotal()+""));
         dataView.setData(taskList);
         return dataView;
     }

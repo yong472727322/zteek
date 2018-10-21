@@ -69,14 +69,15 @@
 	$(function(){
 
         $('#table_id_example').DataTable({
-            draw: 1,//标识可以避免因ajax的异步性而导致展示错误数据
-            recordsFiltered: 10,//过滤后数据总条数
-            recordsTotal: 10,//过滤前数据总条数
+            // draw: 1,//标识可以避免因ajax的异步性而导致展示错误数据
+            // recordsFiltered: 10,//过滤后数据总条数
+            // recordsTotal: 10,//过滤前数据总条数
 //            scrollY: 300,//滚动条高度
             paging: true,//是否支持分页
-            // serverSide: true,//是否支持服务器处理
+            serverSide: true,//是否支持服务器处理
             // 'bStateSave': true,// 状态保存
-            'processing': true, // 打开数据加载时的等待效果
+            // 'processing': true, // 打开数据加载时的等待效果
+			'lengthMenu':[10,20,50,100],
             'sAjaxSource': '/admin/taskData',
             'fnServerData': function (sSource,aoData,fnCallback,oSettings) {
                 oSettings.jqXHR = $.ajax({

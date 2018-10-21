@@ -24,7 +24,7 @@
             <if test="id != null and id != ''">
                 and id &gt; #{id}
             </if>
-        order by id desc
+        order by id asc
         <if test="id == null or id == ''">
             limit 1
         </if>

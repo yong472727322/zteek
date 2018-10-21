@@ -77,8 +77,8 @@
                 if("0000" == result.code && "success" == result.message){
                     var obj = result.object;
                     if(obj.length > 0){
-                        var obj1=obj.reverse();
-                        $.each(obj1,function(i,d){
+                        // var obj1=obj.reverse();
+                        $.each(obj,function(i,d){
                             if(d.id > $(lc).attr("id")){
                                 var showimg = "<div id='"+d.id+"'>[ "+d.createdTime+" ] "+d.message+"</div>";
                                 $(THIS).append(showimg);

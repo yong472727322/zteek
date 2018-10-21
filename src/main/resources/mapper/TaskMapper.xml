@@ -60,7 +60,7 @@
           id,args,asin,`level`,site,run_num,runing_num,run_completed,remaining,created_by,created_date
       from
           amazon_task
-
+      order by created_date desc
     </select>
 
 
