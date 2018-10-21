@@ -32,7 +32,7 @@
         update amazon_task set runing_num = runing_num + 1,remaining = remaining -1 where id = #{id}
     </update>
     <update id="completedTaskById">
-        update amazon_task set runing_num = runing_num - 1,run_completed = run_completed + 1 where id = #{taskId}
+        update amazon_task set runing_num = if(((runing_num - 1) &lt; 0),0,runing_num-1) ,run_completed = if(((run_completed + 1) &gt; run_num),run_num,run_completed + 1) where id = #{taskId}
     </update>
 
 

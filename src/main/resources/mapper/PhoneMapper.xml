@@ -36,7 +36,7 @@
       SELECT * FROM (
           SELECT * FROM phone_log
           WHERE
-            t.created_time &gt; DATE_SUB(now(),INTERVAL ${recentlyMinute} MINUTE)
+            created_time &gt; DATE_SUB(now(),INTERVAL ${recentlyMinute} MINUTE)
           ORDER BY id DESC LIMIT 1000
           ) t
       GROUP BY  t.imei ORDER BY t.id DESC

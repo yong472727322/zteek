@@ -51,7 +51,6 @@
         $.ajax({
             type:'post',
             url:targetUrl,
-            cache: false,
             data:data,
             dataType:'json',
             success:function(data){
@@ -62,8 +61,10 @@
 				}
             },
             error:function(){
-                alert("请求失败")
-            }
+                location.href = "index";
+            },complete:function(XHR,TS){
+                location.href = "index";
+			}
         });
         return false;
     });

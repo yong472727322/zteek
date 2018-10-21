@@ -21,9 +21,15 @@
         where t.id not in (SELECT t.p_id from ip_record t where t.imei=1 and t.start_date &lt;  DATE_SUB(now(),INTERVAL 1 HOUR)) limit 1
     </select>
 
-    <!--获取所有VPS最新的IP-->
+    <!--获取最近1天有IP记录的VPS的最新的IP-->
     <select id="getVpsNewIps" resultMap="BaseResultMap">
-        select * from (select * from ip_pool t order by t.create_date desc limit 999999) a GROUP BY a.vps
+        SELECT * FROM (
+          SELECT * FROM ip_pool
+          WHERE
+          create_date &gt; DATE_SUB(now(),INTERVAL 1 DAY)
+          ORDER BY id DESC LIMIT 999999
+          ) t
+      GROUP BY  t.vps ORDER BY t.id DESC
     </select>
 
     <insert id="insertRecord">
