@@ -24,7 +24,7 @@
             <if test="id != null and id != ''">
                 and id &gt; #{id}
             </if>
-        order by created_time desc
+        order by id desc
         <if test="id == null or id == ''">
             limit 1
         </if>

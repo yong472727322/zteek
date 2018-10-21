@@ -34,7 +34,7 @@ public interface PhoneService {
     List<PhoneLog> getNewLogs(String imei,Long id);
 
     /**
-     * 获取最近10分钟有日志的手机
+     * 获取最近n分钟有日志的手机
      * @param recentlyMinute
      * @return
      */

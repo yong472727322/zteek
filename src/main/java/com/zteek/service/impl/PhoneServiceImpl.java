@@ -25,7 +25,9 @@ public class PhoneServiceImpl implements PhoneService {
     public int recordLog(PhoneLog log) {
         if(!StringUtils.isEmpty(log.getMessage())){
             //防止过长报错
-            log.setMessage(log.getMessage().substring(0,254));
+            if(log.getMessage().length() > 254){
+                log.setMessage(log.getMessage().substring(0,254));
+            }
         }
         if(null == log.getCreatedTime()){
             //设置 默认 当前时间

@@ -226,7 +226,7 @@ public class AdminController {
 
     @GetMapping("toLog")
     public String toLog(ModelMap map){
-        //查询最近10分钟内有日志的手机
+        //查询最近100分钟内有日志的手机
         List<PhoneLog> phones = phoneService.getRecentlyLog(100);
         map.addAttribute("phones",phones);
         return "log";

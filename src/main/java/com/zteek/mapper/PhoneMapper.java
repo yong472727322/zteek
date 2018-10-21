@@ -20,7 +20,7 @@ public interface PhoneMapper {
     List<PhoneLog> getNewLogByImei(@Param("imei") String imei,@Param("id") Long id);
 
     /**
-     * 获取最近 recentlyMinute 分钟有日志的手机
+     * 获取最近 n 分钟有日志的手机
      * @return
      */
     List<PhoneLog> getRecentlyLog(@Param("recentlyMinute") int recentlyMinute);
