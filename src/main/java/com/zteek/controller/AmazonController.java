@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -191,6 +190,18 @@ public class AmazonController {
         logger.info("记录vps[{}]发送过来的ip[{}]",vps,ip);
         //查询出数据库中最新的IP
         IpPool ipPool = ipPoolService.getNewIpByVps(vps);
+        if(null == ipPool){
+            ipPool = new IpPool();
+            ipPool.setVps(vps);
+            ipPool.setIp(ip);
+            ipPool.setAccount(vps);
+            ipPool.setPort(4431);
+            ipPool.setPassword("password");
+            int i = ipPoolService.insertIP(ipPool);
+            logger.info("VPS[{}]是新加入的，直接插入数据库，结果[{}]",vps,i);
+
+            return;
+        }
         String dbIP = ipPool.getIp();
         logger.info("VPS[{}]在数据库中最新的IP是[{}]",vps,dbIP);
         //比较是否相同
