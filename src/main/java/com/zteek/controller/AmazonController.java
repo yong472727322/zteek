@@ -199,7 +199,9 @@ public class AmazonController {
             ipPool.setPassword("password");
             int i = ipPoolService.insertIP(ipPool);
             logger.info("VPS[{}]是新加入的，直接插入数据库，结果[{}]",vps,i);
-
+            if( 1 == i){
+                changeIpSucess(vps,ipPool);
+            }
             return;
         }
         String dbIP = ipPool.getIp();
