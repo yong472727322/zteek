@@ -19,9 +19,21 @@ public class PhoneLog {
      */
     private String message;
     /**
+     * 日志级别
+     */
+    private String level;
+    /**
      * 日志时间
      */
     private Date createdTime;
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
+    }
 
     public Long getId() {
         return id;

@@ -29,6 +29,10 @@ public class PhoneServiceImpl implements PhoneService {
                 log.setMessage(log.getMessage().substring(0,254));
             }
         }
+        if(!StringUtils.isEmpty(log.getLevel())){
+            //统一为小写
+            log.setLevel(log.getLevel().toLowerCase());
+        }
         if(null == log.getCreatedTime()){
             //设置 默认 当前时间
             log.setCreatedTime(new Date());

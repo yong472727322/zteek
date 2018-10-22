@@ -230,7 +230,10 @@ public class AmazonController {
     @RequestMapping("recordLog")
     public void recordLog(PhoneLog log){
         if(!StringUtils.isEmpty(log.getImei()) && !StringUtils.isEmpty(log.getMessage())){
-            logger.info("记录手机[{}]发送过来的日志[{}]",log.getImei(),log.getMessage());
+            if(!StringUtils.isEmpty(log.getLevel()) && "error".equalsIgnoreCase(log.getLevel())){
+                //只有错误日志，才打印出来。
+                logger.error("记录手机[{}]发送过来的错误日志[{}]",log.getImei(),log.getMessage());
+            }
             phoneService.recordLog(log);
         }
     }
