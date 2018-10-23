@@ -72,14 +72,15 @@
             var pDiv = $(this).parent();
             //div_1的最后一条 消息
             var lc = $(this).children("div:last-child");
+            var lc_id = $(lc).attr("id");
             //发送AJAX请求，获取最新的一条日志
-            $.get("/admin/log",{"imei":pDiv.attr("id"),"id":$(lc).attr("id")},function(result){
+            $.get("/admin/log",{"imei":pDiv.attr("id"),"id":lc_id},function(result){
                 if("0000" == result.code && "success" == result.message){
                     var obj = result.object;
                     if(obj.length > 0){
                         // var obj1=obj.reverse();
                         $.each(obj,function(i,d){
-                            if(d.id > $(lc).attr("id")){
+                            if(d.id > lc_id){
                                 //样式
                                 var stl = "style='color:#5bc0de'";
                                 if(d.level){

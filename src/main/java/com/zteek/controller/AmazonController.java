@@ -113,11 +113,11 @@ public class AmazonController {
      * @return
      */
     @RequestMapping("changeIP")
-    public ReturnResult changeIP(String token, Long timestamp, String imei,HttpServletRequest request){
+    public ReturnResult changeIP(String token, Long timestamp, String imei,String proxy,HttpServletRequest request){
         ReturnResult rr = new ReturnResult();
         try{
             String ip = IPUtil.getIp(request);
-            logger.info("手机[{}],ip[{}]发送换IP请求",imei,ip);
+            logger.info("手机[{}],ip[{}]请求IP[{}]切换网络",imei,ip,proxy);
             if(null == token || "".equals(token)){
                 rr.setCode("9999");
                 rr.setMessage("fail");
@@ -126,6 +126,11 @@ public class AmazonController {
             if(null == timestamp || "".equals(timestamp)){
                 rr.setCode("9999");
                 rr.setMessage("fail");
+                return rr;
+            }
+            if(StringUtils.isEmpty(proxy)){
+                rr.setCode("9999");
+                rr.setMessage("代理IP必须");
                 return rr;
             }
             if(null == imei || "".equals(imei)){
@@ -144,7 +149,7 @@ public class AmazonController {
 
             String s = MD5.MD5(String.valueOf(timestamp));
             if(s.toUpperCase().equals(token.toUpperCase())){
-                boolean b = ipUtil.changIp(true,imei);
+                boolean b = ipUtil.changIp(true,imei,proxy);
                 rr.setObject(b);
             }else {
                 rr.setCode("9999");
