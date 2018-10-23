@@ -129,9 +129,23 @@ public class IpPoolServiceImpl implements IpPoolService {
             int i = this.insertUseRecord(ipPool.getId(), ipPool.getIp(), imei);
             if(i > 0){
                 log.info("插入一条使用记录，结果：[{}]",i);
+
                 Map<String,Date> map = new HashMap<>(3);
                 map.put(imei,new Date());
-                Constant.use.put(notUseIp,map);
+
+                if(Constant.use.size() > 0){
+                    //有使用记录
+                    Map<String, Date> map1 = Constant.use.get(notUseIp);
+                    if(null != map1){
+                        //把当前手机加入到使用列表
+                        map1.put(imei,new Date());
+                    }else {
+                        Constant.use.put(notUseIp,map);
+                    }
+                }else{
+                    Constant.use.put(notUseIp,map);
+                }
+
                 return ipPool;
             }
             return null;
