@@ -28,7 +28,7 @@
                 <div class="div_0" id="log-container" >
                     <div class="div_3" th:each="mapS:${phones}" th:id="${mapS.imei}">
                         <div class="div_1">
-                            <div th:id="${mapS.id}" style="color: green;">
+                            <div th:id="${mapS.id}" style="color: #5bc0de;">
                                 [ [[${#calendars.format(mapS.createdTime,'yyyy-MM-dd HH:mm:ss')}]] ] [[${mapS.message}]]
                             </div>
                         </div>
@@ -81,17 +81,13 @@
                         $.each(obj,function(i,d){
                             if(d.id > $(lc).attr("id")){
                                 //样式
-                                var stl = "";
+                                var stl = "style='color:#5bc0de'";
                                 if(d.level){
                                     if("error" == d.level){
-                                        stl = "style='color:red'";
+                                        stl = "style='color:#d9534f'";
                                     }else if("warn" == d.level){
-                                        stl = "style='color:#e7d936'";
-                                    }else {
-                                        stl = "style='color:green'";
+                                        stl = "style='color:#f0ad4e'";
                                     }
-                                }else {
-                                    stl = "style='color:green'";
                                 }
                                 var showimg = "<div id='"+d.id+"' "+stl+">[ "+d.createdTime+" ] "+d.message+"</div>";
                                 $(THIS).append(showimg);

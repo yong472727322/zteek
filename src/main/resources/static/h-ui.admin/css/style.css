@@ -6,6 +6,6 @@
 
 
 .div_0{ overflow:hidden; margin:auto;font-size: 15px;font-weight: bolder;}
-.div_1{ height:500px; border: solid 2px #000000; overflow-y:auto; overflow-x:auto; background: #333;}
+.div_1{ height:500px; border: solid 2px #000000; overflow-y:auto; overflow-x:auto;}
 .div_3{width: 600px;height:670px;float:left;margin-right:100px;}
 .biaoti_1{ height:30px;border: solid 2px #000000; margin-top:20px; text-align:center; margin-left:auto; margin-right:auto;}
