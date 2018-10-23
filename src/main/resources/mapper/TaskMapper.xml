@@ -57,10 +57,14 @@
 
     <select id="getTaskList" resultMap="BaseResultMap">
       select
-          id,args,asin,`level`,site,run_num,runing_num,run_completed,remaining,created_by,created_date
+        t.id,t.args,t.asin,t.`level`,t.site,t.run_num,t.runing_num,t.run_completed,t.remaining,t.created_by,t.created_date
       from
-          amazon_task
-      order by created_date desc
+          amazon_task t
+       WHERE 1=1
+          <if test="asin != null and asin != ''">
+              and t.asin = #{asin}
+          </if>
+      order by t.`level` desc,t.created_date desc
     </select>
 
 
@@ -101,7 +105,7 @@
 
     </select>
 
-    <select id="indexChart" resultMap="BaseResultMap">
+    <select id="lineChart" resultMap="BaseResultMap">
         select t1.calendar_date,ifnull(t.c,0) total from
         (
             select tsc.calendar_date
@@ -118,12 +122,57 @@
                 WHERE
                   atr.end_time is not null
                 <if test="resultCode != null and resultCode != ''">
-                    and result_code=#{resultCode}
+                    and atr.result_code=#{resultCode}
                 </if>
-
+                <if test="taskId != null and taskId != ''">
+                    and atr.task_id=#{taskId}
+                </if>
         group by DATE_FORMAT(atr.end_time,'%Y-%m-%d')
         ) t on t1.calendar_date=t.end_time
         order by t1.calendar_date
     </select>
+
+    <!-- 查询成功任务耗时 by:leo,at:2018/10/23 -->
+    <select id="taskConsuming" resultType="map">
+            select
+                max(atr.consuming) maxConsume,
+                min(atr.consuming) minConsume,
+                round(avg(atr.consuming),0) avgConsume
+            from amazon_task_run atr
+        where atr.end_time is not null and atr.result_code=2
+        and atr.task_id=#{taskId}
+    </select>
+
+    <!-- 查询任务成功率及成功数 by:leo,at:2018/10/23 -->
+    <select id="taskSuccessRate" resultType="map">
+        select ROUND(t1.success/t2.total*100,2) as success_rate,t1.success from (
+              select count(1) success from amazon_task_run atr where
+              atr.result_code=2
+              and atr.task_id=#{taskId}
+                <if test="rateType == 1">
+                    and atr.end_time &gt; CURDATE()
+                </if>
+                <if test="rateType == 2">
+                    and atr.end_time BETWEEN DATE_SUB(CURDATE(),INTERVAL 1 DAY) AND CURDATE()
+                </if>
+                <if test="rateType == 3">
+                    and atr.end_time is not null
+                </if>
+              ) t1,
+            (select count(1) total from amazon_task_run atr
+                where atr.task_id=#{taskId}
+                <if test="rateType == 1">
+                    and atr.end_time &gt; CURDATE()
+                </if>
+                <if test="rateType == 2">
+                    and atr.end_time BETWEEN DATE_SUB(CURDATE(),INTERVAL 1 DAY) AND CURDATE()
+                </if>
+                <if test="rateType == 3">
+                    and atr.end_time is not null
+                </if>
+            ) t2
+    </select>
+
+
 
 </mapper>

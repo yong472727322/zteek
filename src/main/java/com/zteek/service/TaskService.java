@@ -3,6 +3,7 @@ package com.zteek.service;
 import com.zteek.entity.AmazonTask;
 import com.zteek.entity.AmazonTaskRun;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -44,4 +45,34 @@ public interface TaskService {
      * @return
      */
     List<AmazonTask> getTasks(Integer maxTaskNum);
+
+    /**
+     * 根据ASIN查找任务
+     * @param asin
+     * @return
+     */
+    AmazonTask findTaskByAsin(String asin);
+
+    /**
+     * ASIN详情页 折线图
+     * @param i null:全部，1：失败，2：成功
+     * @param id    任务ID
+     * @return
+     */
+    List<AmazonTask> asinChart(Integer i, Long id);
+
+    /**
+     * 查询任务成功率及成功数
+     * @param taskId
+     * @param rateType  1:今日，2：昨日，3：全部
+     * @return
+     */
+    Map<String,BigDecimal> taskSuccessRate(Long taskId, int rateType);
+
+    /**
+     * 查询成功任务耗时
+     * @param taskId
+     * @return
+     */
+    Map<String, Integer> taskConsuming(Long taskId);
 }

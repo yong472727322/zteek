@@ -48,6 +48,7 @@
 								<th width="80">运行中</th>
 								<th width="80">完成次数</th>
 								<th width="80">剩余次数</th>
+								<th width="80">操作</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -94,14 +95,23 @@
                 });
             },
             columns: [
-                { title: 'ASIN',data: 'asin' },
-                { data: 'keyword' },
-                { data: 'productName' },
-                { data: 'level' },
-                { data: 'runNum' },
-                { data: 'runingNum' },
-                { data: 'runCompleted' },
-                { data: 'remaining' }
+                { data: 'asin',"orderable": false  },
+                { data: 'keyword',"orderable": false  },
+                { data: 'productName' ,"orderable": false },
+                { data: 'level',"orderable": false  },
+                { data: 'runNum',"orderable": false  },
+                { data: 'runingNum',"orderable": false  },
+                { data: 'runCompleted',"orderable": false  },
+                { data: 'remaining',"orderable": false },
+                {
+                    "mData": "id",
+                    "orderable": false, // 禁用排序
+                    "render": function (data, type, full, meta) {
+                        var asin = full["asin"];
+                        return '<a href="/admin/taskDetail/'+asin+'" target="_blank">查看详情</a>';
+                    }
+                }
+
             ]
         });
 

@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -82,7 +83,7 @@ public class AdminController {
      * @return
      */
     @GetMapping("index")
-    public String index(HttpServletRequest request,ModelMap map) {
+    public String index(ModelMap map) {
 
         List<AmazonTask> list = taskService.indexChart(null);
         map.addAttribute("chartData",list);
@@ -169,6 +170,51 @@ public class AdminController {
     @GetMapping("taskList")
     public String taskList(){
         return "taskList";
+    }
+
+    /**
+     * ASIN 详情页
+     * @param asin
+     * @param map
+     * @return
+     */
+    @GetMapping("taskDetail/{asin}")
+    public String taskDetail(@PathVariable("asin") String asin,ModelMap map){
+        AmazonTask task = taskService.findTaskByAsin(asin);
+        if(null == task){
+            //没有找到返回列表页
+            return "taskList";
+        }
+        List<AmazonTask> list = taskService.asinChart(null,task.getId());
+        map.addAttribute("chartData",list);
+        list = taskService.asinChart(1,task.getId());
+        map.addAttribute("failChartData",list);
+        list = taskService.asinChart(2,task.getId());
+        map.addAttribute("successChartData",list);
+        map.addAttribute("asin",asin);
+
+        //统计 信息
+
+        map.addAttribute("runNum",task.getRunNum());
+        map.addAttribute("runCompleted",task.getRunCompleted());
+        map.addAttribute("remaining",task.getRemaining());
+
+        Map<String, BigDecimal> successRate = taskService.taskSuccessRate(task.getId(), 1);
+        map.addAttribute("todaySuccessRate",successRate.get("success_rate"));
+        map.addAttribute("todayCompleted",successRate.get("success"));
+        successRate = taskService.taskSuccessRate(task.getId(), 2);
+        map.addAttribute("lastdaySuccessRate",successRate.get("success_rate"));
+        map.addAttribute("lastdayCompleted",successRate.get("success"));
+        successRate = taskService.taskSuccessRate(task.getId(), 3);
+        map.addAttribute("successRate",successRate.get("success_rate"));
+        map.addAttribute("completed",successRate.get("success"));
+
+        Map<String, Integer> consume = taskService.taskConsuming(task.getId());
+        map.addAttribute("maxConsume",consume.get("maxConsume"));
+        map.addAttribute("minConsume",consume.get("minConsume"));
+        map.addAttribute("avgConsume",consume.get("avgConsume"));
+
+        return "taskDetail";
     }
 
 

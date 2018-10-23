@@ -1,0 +1,139 @@
+﻿<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+	<div th:replace="_meta :: meta"></div>
+	<div th:replace="_meta :: script"></div>
+	<div th:replace="_meta :: link"></div>
+
+	<title>任务详情 - 后台管理系统 v1.0</title>
+	<meta name="keywords" content="H-ui.admin v3.0,H-ui网站后台模版,后台模版下载,后台管理系统模版,HTML后台模版下载">
+	<meta name="description" content="H-ui.admin v3.0，是一款由国人开发的轻量级扁平化网站后台模板，完全免费开源的网站后台管理系统模版，适合中小型CMS后台系统。">
+</head>
+<body>
+	<div th:replace="_header :: header"></div>
+
+	<div th:replace="_menu :: aside"></div>
+
+	<section class="Hui-article-box">
+		<nav class="breadcrumb"><i class="Hui-iconfont"></i> <a href="/" class="maincolor">首页</a>
+			<span class="c-999 en">&gt;</span>
+			<span class="c-666">任务详情</span>
+			<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+		<div class="Hui-article">
+			<article style="height: 55%">
+				<div id="container" style="height: 100%"></div>
+			</article>
+			<article class="cl pd-20">
+				<table class="table table-border table-bordered table-bg">
+					<caption>统计信息</caption>
+					<tbody>
+						<tr class="text-c">
+							<th>最长耗时</th>
+							<td>[[${maxConsume}]]（秒）</td>
+							<th>最短耗时</th>
+							<td>[[${minConsume}]]（秒）</td>
+							<th>平均耗时</th>
+							<td>[[${avgConsume}]]（秒）</td>
+						</tr>
+						<tr class="text-c">
+							<th>任务总数</th>
+							<td>[[${runNum}]]（次）</td>
+							<th>已完成数</th>
+							<td>[[${runCompleted}]]（次）</td>
+							<th>未完成数</th>
+							<td>[[${remaining}]]（次）</td>
+						</tr>
+						<tr class="text-c">
+							<th>今日成功率</th>
+							<td>[[${todaySuccessRate}]]（%）</td>
+							<th>昨日成功率</th>
+							<td>[[${lastdaySuccessRate}]]（%）</td>
+							<th>总成功率</th>
+							<td>[[${successRate}]]（%）</td>
+						</tr>
+						<tr class="text-c">
+							<th>今日成功数</th>
+							<td>[[${todayCompleted}]]（次）</td>
+							<th>昨日成功数</th>
+							<td>[[${lastdayCompleted}]]（次）</td>
+							<th>总成功数</th>
+							<td>[[${completed}]]（次）</td>
+						</tr>
+					</tbody>
+				</table>
+			</article>
+			<div th:replace="_footer :: footer"></div>
+		</div>
+	</section>
+
+
+	<div th:replace="_footer :: script"></div>
+
+
+	<script type="text/javascript" src="/lib/hcharts/Highcharts/5.0.6/js/highcharts.js"></script>
+
+	<script th:inline="javascript">
+        var asin = [[${asin}]];
+        var title = "ASIN[<font style='color: red'>"+asin+"</font>]近31天完成数";
+        var chartData = [[${chartData}]];
+        var failChartData = [[${failChartData}]];
+        var successChartData = [[${successChartData}]];
+
+        var obj = {"name":"总次数"};
+
+		var categories1 = new Array();
+        var datas = new Array();
+		$.each(chartData,function(index,data){
+		    datas.push(data.total);
+            categories1.push(data.calendarDate.split("T")[0]);
+		});
+		obj.data = datas;
+
+        var obj1 = {"name":"失败次数"};
+        var categories2 = new Array();
+        var datas1 = new Array();
+        $.each(failChartData,function(index,data){
+            datas1.push(data.total);
+            categories2.push(data.calendarDate.split("T")[0]);
+        });
+        obj1.data = datas1;
+
+        var obj2 = {"name":"成功次数"};
+        var categories3 = new Array();
+        var datas2 = new Array();
+        $.each(successChartData,function(index,data){
+            datas2.push(data.total);
+            categories3.push(data.calendarDate.split("T")[0]);
+        });
+        obj2.data = datas2;
+
+        var chart = Highcharts.chart('container', {
+            chart: {
+                type: 'line'
+            },
+            title: {
+                text: title,
+                useHTML:true
+            },
+            xAxis: {
+                categories:categories1
+            },
+            exporting:{
+                enabled:false
+			},
+            credits:{
+              enabled:false
+			},
+            yAxis: {
+                title: {
+                    text: '数量 (次)'
+                }
+            },
+            series: [obj,obj1,obj2]
+        });
+
+	</script>
+
+</body>
+</html>

@@ -5,13 +5,14 @@ import com.zteek.entity.AmazonTaskRun;
 import com.zteek.mapper.TaskMapper;
 import com.zteek.service.TaskService;
 import com.zteek.utils.Constant;
-import com.zteek.utils.IPUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -103,7 +104,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<AmazonTask> indexChart(Integer resultCode) {
-        return taskMapper.indexChart(resultCode);
+        return taskMapper.lineChart(resultCode,null);
     }
 
     @Override
@@ -117,5 +118,31 @@ public class TaskServiceImpl implements TaskService {
             maxTaskNum = Constant.max_task_num;
         }
         return taskMapper.getTasks(maxTaskNum);
+    }
+
+    @Override
+    public AmazonTask findTaskByAsin(String asin) {
+        Map<String,Object> params = new HashMap<>(3);
+        params.put("asin",asin);
+        List<AmazonTask> taskList = taskMapper.getTaskList(params);
+        if(null != taskList && taskList.size() > 0){
+            return taskList.get(0);
+        }
+        return null;
+    }
+
+    @Override
+    public List<AmazonTask> asinChart(Integer i, Long id) {
+        return taskMapper.lineChart(i,id);
+    }
+
+    @Override
+    public Map<String, BigDecimal> taskSuccessRate(Long taskId, int rateType) {
+        return taskMapper.taskSuccessRate(taskId,rateType);
+    }
+
+    @Override
+    public Map<String, Integer> taskConsuming(Long taskId) {
+        return taskMapper.taskConsuming(taskId);
     }
 }
