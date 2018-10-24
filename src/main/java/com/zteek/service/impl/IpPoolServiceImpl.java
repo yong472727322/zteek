@@ -82,6 +82,11 @@ public class IpPoolServiceImpl implements IpPoolService {
             if(use.size() > 0){
                 Map<String, Date> stringDateMap = use.get(ip);
                 if(null != stringDateMap && stringDateMap.size() > 0){
+                    //如果此IP已经超过使用次数，则换其它的
+                    if(stringDateMap.size() >= Constant.vps_change.get(vps.getKey())){
+                        log.info("此IP[{}]使用次数[{}]，已经达到目标次数[{}]，换其它IP",ip,stringDateMap.size(),Constant.vps_change.get(vps.getKey()));
+                        continue;
+                    }
                     for(Map.Entry<String,Date> use2 : stringDateMap.entrySet()){
                         String key = use2.getKey();
                         if(imei.equalsIgnoreCase(key)){
