@@ -59,7 +59,7 @@ public class AdminController {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute(Constant.user);
         if(null != user){
-            logger.info("用户[{}]，已经是登陆状态，重定向到首页",user.getId());
+            logger.info("用户[{}]，已经是登陆状态，重定向到首页",user.getUsername());
             return "redirect:index";
         }
         return "login";
