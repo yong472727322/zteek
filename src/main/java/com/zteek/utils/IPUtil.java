@@ -26,7 +26,6 @@ import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Component
 public class IPUtil implements CommandLineRunner {
@@ -81,35 +80,6 @@ public class IPUtil implements CommandLineRunner {
          * 根据手机识别码  找出 使用的IP 及 VPS
          */
 
-//        //手机使用的VPS
-//        String useVps = null;
-//        //手机使用的IP
-//        String useIp = null;
-//        //遍历 所有 IP 的 使用记录 ，找到 当前手机
-//        for(Map.Entry<String,Map<String,Date>> map : Constant.use.entrySet()){
-//            //使用该IP的手机集合
-//            Map<String, Date> value = map.getValue();
-//            //遍历集合
-//            for(Map.Entry<String,Date> val : value.entrySet()){
-//                //记录的手机
-//                String phoneImei = val.getKey();
-//                //比对，是否是当前手机
-//                if(phoneImei.equalsIgnoreCase(imei)){
-//                    //手机当前IP
-//                    useIp = map.getKey();
-//                    //是当前手机，遍历 VPS ，根据IP找到对应的VPS
-//                    for(Map.Entry<String,String> vps : Constant.vps.entrySet()){
-//                        //vps1 当前 IP
-//                        String vpsCurrentIP = vps.getValue();
-//                        if(useIp.equalsIgnoreCase(vpsCurrentIP)){
-//                            useVps = vps.getKey();
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
         //如果没有useIp，说明 是 因为IP 都使用过了，随机选择一个IP
         if(null == useIp){
             for(Map.Entry<String,Map<String,Date>> map : Constant.use.entrySet()){
@@ -121,8 +91,8 @@ public class IPUtil implements CommandLineRunner {
         //手机使用的VPS
         String useVps = null;
         for(Map.Entry<String,String> vps : Constant.vps.entrySet()){
-            String value = vps.getValue();
-            if(value.equalsIgnoreCase(useIp)){
+            String value = vps.getKey();
+            if(vps.getValue().equalsIgnoreCase(useIp)){
                 useVps = value;
             }
         }
@@ -131,9 +101,13 @@ public class IPUtil implements CommandLineRunner {
         Integer targetNum = Constant.vps_change.get(useVps);
 
         //获取当前VPS的 实际数量
-        Map<String, Date> useRecord = Constant.use.get(Constant.vps.get(useVps));
+        Map<String, Date> useRecord = Constant.use.get(useIp);
+        if(null == useRecord){
+            log.warn("获取当前IP[{}]的使用记录，结果为[null]，可能是服务器重启了。",useIp);
+            return false;
+        }
         //清除 使用时间，标识为 切换IP
-        useRecord.put(useIp,null);
+        useRecord.put(imei,null);
         log.info("清除手机[{}]使用IP[{}]的时间，标识为 切换IP",imei,useIp);
         int currentNum = 0;
         for(Map.Entry<String,Date> map : useRecord.entrySet()){
@@ -142,9 +116,8 @@ public class IPUtil implements CommandLineRunner {
                 currentNum ++;
             }
         }
-//        int currentNum = useRecord.size();
 
-        log.info("手机[{}][{}]请求换VPS[{}]的IP，目标数量[{}]，实际数量[{}]",imei,flag==true?"主动":"被动",useVps,targetNum,currentNum);
+        log.info("手机[{}][{}]请求换VPS[{}]的IP[{}]，目标数量[{}]，实际数量[{}]",imei,flag==true?"主动":"被动",useVps,useIp,targetNum,currentNum);
 
         if(flag){
             currentNum = currentNum + 1;
