@@ -88,17 +88,19 @@ public class IpPoolServiceImpl implements IpPoolService {
             //想用的IP，判断是否存在使用记录
             String ip = vps.getValue();
             boolean flag = true;
-            Map<String, Map<String, Date>> use = Constant.use;
-            if(use.size() > 0){
-                Map<String, Date> stringDateMap = use.get(ip);
-                if(null != stringDateMap && stringDateMap.size() > 0){
+            if(!Constant.use.isEmpty()){
+                Map<String, Date> useRecord = Constant.use.get(ip);
+
+                if(!useRecord.isEmpty()){
+                    int size = useRecord.size();
+                    Integer vpsChange = Constant.vps_change.get(vps.getKey());
                     //如果此IP已经超过使用次数，则换其它的
-                    if(stringDateMap.size() >= Constant.vps_change.get(vps.getKey())){
-                        log.info("此IP[{}]使用次数[{}]，已经达到目标次数[{}]，换其它IP",ip,stringDateMap.size(),Constant.vps_change.get(vps.getKey()));
+                    if(size >= vpsChange){
+                        log.info("此IP[{}]使用次数[{}]，已经达到目标次数[{}]，换其它IP",ip, size, vpsChange);
                         continue;
                     }
-                    for(Map.Entry<String,Date> use2 : stringDateMap.entrySet()){
-                        String key = use2.getKey();
+                    for(Map.Entry<String,Date> use : useRecord.entrySet()){
+                        String key = use.getKey();
                         if(imei.equalsIgnoreCase(key)){
                             flag = false;
                             break;
