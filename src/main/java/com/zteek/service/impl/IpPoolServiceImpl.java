@@ -65,7 +65,7 @@ public class IpPoolServiceImpl implements IpPoolService {
     }
 
     @Override
-    public IpPool getNewIpByImei(String imei) {
+    public synchronized IpPool getNewIpByImei(String imei) {
 
         //遍历 VPS ，找到未使用过的IP
         String notUseIp = null;
