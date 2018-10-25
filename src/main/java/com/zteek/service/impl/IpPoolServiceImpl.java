@@ -26,6 +26,11 @@ public class IpPoolServiceImpl implements IpPoolService {
     @Autowired
     private IPUtil ipUtil;
 
+    /**
+     * 标识，是否有手机正在获取，true:有手机正在获取，false:没有，可以获取
+     */
+    private boolean flagGetIp = false;
+
     @Override
     public List<IpPool> getVpsNewIps() {
         return ipPoolMapper.getVpsNewIps();
@@ -66,6 +71,11 @@ public class IpPoolServiceImpl implements IpPoolService {
 
     @Override
     public synchronized IpPool getNewIpByImei(String imei) {
+        if(flagGetIp){
+            log.warn(" 有手机正在获取IP，返回null。");
+            return null;
+        }
+        flagGetIp = true;
 
         //遍历 VPS ，找到未使用过的IP
         String notUseIp = null;
@@ -116,6 +126,7 @@ public class IpPoolServiceImpl implements IpPoolService {
         if(null == notUseIp){
             log.warn("没有找到，说明内存中所有的IP，手机[{}]都已经使用过了，发送更换IP请求",imei);
             ipUtil.changIp(false,imei, null);
+            flagGetIp = false;
             return null;
         }
 
@@ -150,11 +161,13 @@ public class IpPoolServiceImpl implements IpPoolService {
                 }else{
                     Constant.use.put(notUseIp,map);
                 }
-
+                flagGetIp = false;
                 return ipPool;
             }
+            flagGetIp = false;
             return null;
         }
+        flagGetIp = false;
         return null;
     }
 
