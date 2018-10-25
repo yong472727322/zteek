@@ -26,7 +26,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AmazonTaskRun getTask(String imei) {
+    public synchronized AmazonTaskRun getTask(String imei) {
 
         //任务个数
         int size = Constant.tasks.size();
