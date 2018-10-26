@@ -15,6 +15,11 @@
         VALUES (#{imei},#{message},#{createdTime},#{level})
     </insert>
 
+    <!-- 清除3天前日志 by:leo,at:2018/10/26 -->
+    <delete id="deleteLog">
+        DELETE FROM phone_log WHERE created_time &lt; DATE_SUB(CURDATE(),INTERVAL 3 DAY)
+    </delete>
+
     <!-- 获取最新的一条日志或大于指定ID的日志 by:leo,at:2018/10/20 -->
     <select id="getNewLogByImei" resultMap="BaseResultMap">
         select id,imei,message,created_time,`level`

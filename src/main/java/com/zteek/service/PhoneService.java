@@ -3,7 +3,6 @@ package com.zteek.service;
 import com.zteek.entity.PhoneLog;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,4 +39,9 @@ public interface PhoneService {
      */
     List<PhoneLog> getRecentlyLog(@Param("recentlyMinute") int recentlyMinute);
 
+    /**
+     * 清除3天前日志，防止数据量过大
+     * @return
+     */
+    int deleteLog();
 }

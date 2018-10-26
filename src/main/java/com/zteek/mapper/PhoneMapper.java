@@ -3,7 +3,6 @@ package com.zteek.mapper;
 import com.zteek.entity.PhoneLog;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,4 +30,11 @@ public interface PhoneMapper {
      * @return
      */
     int recordLog(PhoneLog log);
+
+    /**
+     * 清除3天前日志
+     * @return
+     */
+    int deleteLog();
+
 }

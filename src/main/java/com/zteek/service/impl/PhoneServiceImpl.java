@@ -59,5 +59,10 @@ public class PhoneServiceImpl implements PhoneService {
         return phoneMapper.getRecentlyLog(recentlyMinute);
     }
 
+    @Override
+    public int deleteLog() {
+        return phoneMapper.deleteLog();
+    }
+
 
 }

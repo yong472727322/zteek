@@ -2,6 +2,7 @@ package com.zteek.utils;
 
 import com.zteek.entity.IpPool;
 import com.zteek.service.IpPoolService;
+import com.zteek.service.PhoneService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ public class ClearUseTask {
     private IPUtil ipUtil;
     @Autowired
     private IpPoolService ipPoolService;
+    @Autowired
+    private PhoneService phoneService;
 
     /**
      * 每30分钟 清除一次 超时任务
@@ -105,6 +108,16 @@ public class ClearUseTask {
             Constant.vps.put(ipPool.getVps(),ipPool.getIp());
         }
         log.info("定时任务，结束每天0点清除无效VPS。");
+    }
+
+    /**
+     * 每天1点清除3天前的日志
+     */
+    @Scheduled(cron = "0 0 1 * * ?")
+    public void clearPhoneLog(){
+        log.info("定时任务，开始每天1点清除3天前的日志。");
+        phoneService.deleteLog();
+        log.info("定时任务，结束每天1点清除3天前的日志。");
     }
 
 }
