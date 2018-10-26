@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -174,7 +175,9 @@ public class IPUtil implements CommandLineRunner {
         } catch (NoRouteToHostException e) {
             log.warn("主机[{}]访问失败，可能VPS正在切换中。。。[{}]",vpsIp,e.getMessage());
         } catch (SocketTimeoutException e) {
-            log.warn("超时，说明向VPS[{}]发送更换IP的命令成功（VPS切换IP中）",vpsIp);
+            log.warn("Socket超时，说明向VPS[{}]发送更换IP的命令成功（VPS切换IP中）",vpsIp);
+        } catch (ConnectTimeoutException e) {
+            log.warn("Connect超时，说明向VPS[{}]发送更换IP的命令成功（VPS切换IP中）",vpsIp);
         } catch (HttpHostConnectException e) {
             log.warn("连接被拒绝，可能VPS在切换或者是旧VPS的无效IP。忽略。");
         } catch (IOException e) {
