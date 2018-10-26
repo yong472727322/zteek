@@ -104,7 +104,7 @@ public class IPUtil implements CommandLineRunner {
         //获取当前VPS的 实际数量
         Map<String, Date> useRecord = Constant.use.get(useIp);
         if(null == useRecord){
-            log.warn("获取当前IP[{}]的使用记录，结果为[null]，可能是服务器重启了。",useIp);
+            log.warn("获取当前IP[{}]的使用记录，结果为[null]，可能是服务器重启了或VPS刚好切换了新IP。",useIp);
             return false;
         }
         //清除 使用时间，标识为 切换IP
@@ -124,6 +124,27 @@ public class IPUtil implements CommandLineRunner {
             currentNum = currentNum + 1;
         }
         if (currentNum > targetNum) {
+            if(null != useVps){
+                Boolean aBoolean = Constant.vps_state.get(useVps);
+                if(aBoolean){
+                    log.warn("VPS[{}]正在切换IP中。。。",useVps);
+                    return false;
+                }
+            }
+            //判断该IP是否还有正在使用的手机，防止超过限制的手机还在使用就直接切换导致任务失败
+            int count = 0;
+            Map<String, Date> map = Constant.use.get(useIp);
+            for(Map.Entry<String,Date> record : map.entrySet()){
+                String phone = record.getKey();
+                Date startUseTime = record.getValue();
+                if(null == startUseTime){
+                    count ++;
+                }
+            }
+            if(count < map.size()){
+                log.warn("IP[{}]还有手机正在使用中，不直接切换。",useIp);
+                return false;
+            }
             //发送更换IP请求
             changVpsIp(useIp);
             //清空计数

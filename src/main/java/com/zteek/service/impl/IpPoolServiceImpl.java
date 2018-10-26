@@ -29,7 +29,7 @@ public class IpPoolServiceImpl implements IpPoolService {
     /**
      * 标识，是否有手机正在获取，true:有手机正在获取，false:没有，可以获取
      */
-    private boolean flagGetIp = false;
+    private Object flagGetIp = false;
 
     @Override
     public List<IpPool> getVpsNewIps() {
@@ -71,11 +71,13 @@ public class IpPoolServiceImpl implements IpPoolService {
 
     @Override
     public synchronized IpPool getNewIpByImei(String imei) {
-        if(flagGetIp){
-            log.warn(" 有手机正在获取IP，返回null。");
-            return null;
+        synchronized (flagGetIp){
+            if((boolean)flagGetIp){
+                log.warn(" 有手机正在获取IP，返回null。");
+                return null;
+            }
+            flagGetIp = true;
         }
-        flagGetIp = true;
 
         //遍历 VPS ，找到未使用过的IP
         String notUseIp = null;
@@ -88,10 +90,10 @@ public class IpPoolServiceImpl implements IpPoolService {
             //想用的IP，判断是否存在使用记录
             String ip = vps.getValue();
             boolean flag = true;
-            if(!Constant.use.isEmpty()){
+            if(null != Constant.use && !Constant.use.isEmpty()){
                 Map<String, Date> useRecord = Constant.use.get(ip);
 
-                if(!useRecord.isEmpty()){
+                if(null != useRecord && !useRecord.isEmpty()){
                     int size = useRecord.size();
                     Integer vpsChange = Constant.vps_change.get(vps.getKey());
                     //如果此IP已经超过使用次数，则换其它的

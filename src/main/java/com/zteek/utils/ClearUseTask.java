@@ -1,5 +1,7 @@
 package com.zteek.utils;
 
+import com.zteek.entity.IpPool;
+import com.zteek.service.IpPoolService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,6 +23,8 @@ public class ClearUseTask {
 
     @Autowired
     private IPUtil ipUtil;
+    @Autowired
+    private IpPoolService ipPoolService;
 
     /**
      * 每30分钟 清除一次 超时任务
@@ -86,6 +91,20 @@ public class ClearUseTask {
             }
         }
         log.info("定时任务，结束检测是否有手机长时间(连续30分钟)使用代理，防止手机问题导致IP不切换。");
+    }
+
+    /**
+     * 每天0点清除无效VPS
+     */
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void clearVps(){
+        log.info("定时任务，开始每天0点清除无效VPS。");
+        List<IpPool> vpsNewIps = ipPoolService.getVpsNewIps();
+        Constant.vps.clear();
+        for(IpPool ipPool : vpsNewIps){
+            Constant.vps.put(ipPool.getVps(),ipPool.getIp());
+        }
+        log.info("定时任务，结束每天0点清除无效VPS。");
     }
 
 }
