@@ -29,7 +29,7 @@ public class IpPoolServiceImpl implements IpPoolService {
     /**
      * 标识，是否有手机正在获取，true:有手机正在获取，false:没有，可以获取
      */
-    private Object flagGetIp = false;
+    private boolean flagGetIp = false;
 
     @Override
     public List<IpPool> getVpsNewIps() {
@@ -71,8 +71,8 @@ public class IpPoolServiceImpl implements IpPoolService {
 
     @Override
     public synchronized IpPool getNewIpByImei(String imei) {
-        synchronized (flagGetIp){
-            if((boolean)flagGetIp){
+        synchronized (IpPoolServiceImpl.class){
+            if(flagGetIp){
                 log.warn(" 有手机正在获取IP，返回null。");
                 return null;
             }
