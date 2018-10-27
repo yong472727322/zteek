@@ -41,7 +41,6 @@ public class ClearUseTask {
         log.info("定时任务，开始检测是否有手机长时间(连续30分钟)使用代理，防止手机问题导致IP不切换。");
         if(!Constant.use.isEmpty()){
             for(Map.Entry<String,Map<String,Date>>  use : Constant.use.entrySet()){
-                boolean flag = false;
                 String vpsIp = use.getKey();
                 //IP使用记录
                 Map<String, Date> useRecord = use.getValue();
@@ -72,7 +71,6 @@ public class ClearUseTask {
                         if(null != startUseDate){
                             if((now.getTime()-startUseDate.getTime()) > thirtyMin){
                                 log.warn("手机[{}]使用IP[{}]时间超过30分钟，判定为任务失败，强制把使用时间设置为null(标识为切换IP)",imei,vpsIp);
-                                flag = true;
                                 phone.setValue(null);
                                 currentNum ++;
                             }
@@ -80,14 +78,12 @@ public class ClearUseTask {
                             currentNum ++;
                         }
                     }
-                    if(flag){
-                        log.info("验证IP[{}]是否所有的使用时间都设置为null(标识为切换IP)",vpsIp);
-                        Integer targetNum = Constant.vps_change.get(vps);
-                        if(null != targetNum){
-                            if(currentNum >= targetNum){
-                                log.info("VPS[{}],IP[{}]，实际数量[{}]达到目标数量[{}]，切换。",vps,vpsIp,currentNum,targetNum);
-                                ipUtil.changVpsIp(vpsIp);
-                            }
+                    log.info("验证IP[{}]是否所有的使用时间都设置为null(标识为切换IP)",vpsIp);
+                    Integer targetNum = Constant.vps_change.get(vps);
+                    if(null != targetNum){
+                        if(currentNum >= targetNum && currentNum >= Constant.use.get(vpsIp).size()){
+                            log.info("VPS[{}],IP[{}]，实际数量[{}]达到目标数量[{}]并且所有手机使用时间都标识为null(标识为切换IP)，切换。",vps,vpsIp,currentNum,targetNum);
+                            ipUtil.changVpsIp(vpsIp);
                         }
                     }
                 }
