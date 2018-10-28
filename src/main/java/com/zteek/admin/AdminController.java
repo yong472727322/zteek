@@ -299,8 +299,8 @@ public class AdminController {
      * @param id
      * @return
      */
-    @GetMapping("taskStop")
-    public String taskStop(Long id){
+    @GetMapping("taskStop/{id}")
+    public String taskStop(@PathVariable("id") Long id){
         int i = taskService.updateTaskStatusById(0,id);
         if(i > 0){
             //清空 内存中的任务
