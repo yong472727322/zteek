@@ -49,9 +49,9 @@ public interface TaskMapper {
 
     /**
      * 根据ID更新任务状态
-     * @param status
+     * @param dataStatus
      * @param id
      * @return
      */
-    int updateTaskStatusById(@Param("status") int status, @Param("id") Long id);
+    int updateTaskStatusById(@Param("dataStatus") int dataStatus, @Param("id") Long id);
 }
