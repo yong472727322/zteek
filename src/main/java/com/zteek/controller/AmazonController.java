@@ -266,7 +266,7 @@ public class AmazonController {
 
         //如果是新加入的，服务器一开始没有加载到
         if(!Constant.vps_change.containsKey(vps)){
-            Constant.vps_change.put(vps,IPUtil.DEFAULT_COUNT);
+            Constant.vps_change.put(vps,Constant.changCount);
         }
     }
 

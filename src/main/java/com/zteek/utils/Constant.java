@@ -65,4 +65,13 @@ public class Constant {
      */
     public static final Integer MAX_TASK_COUNTER = 100;
 
+    /**
+     * 默认 重拨 计数器
+     */
+    public static final int DEFAULT_COUNT = 2;
+    /**
+     *  重拨 计数器
+     */
+    public static int changCount = DEFAULT_COUNT;
+
 }

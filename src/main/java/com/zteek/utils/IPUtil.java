@@ -38,17 +38,6 @@ public class IPUtil implements CommandLineRunner {
     private TaskService taskService;
 
     private static Logger log = LoggerFactory.getLogger(IPUtil.class);
-    /**
-     * 默认 重拨 计数器
-     */
-    public static final int DEFAULT_COUNT = 5;
-
-    /**
-     * 更换IP标识，true：VPS正在重新拨号
-     */
-//    public static boolean changIpFlag = false;
-
-    private int changCount = DEFAULT_COUNT;
 
 
     public static String getIp(HttpServletRequest request) {
@@ -214,7 +203,7 @@ public class IPUtil implements CommandLineRunner {
             //todo 验证VPS 是否可用 使用最新的IP发送 GET请求 到 VPS 如果通，说明可用，否则，不可用，不加入
             Constant.vps_detail.put(ipPool.getVps(),ipPool);
             Constant.vps.put(ipPool.getVps(),ipPool.getIp());
-            Constant.vps_change.put(ipPool.getVps(),changCount);
+            Constant.vps_change.put(ipPool.getVps(),Constant.changCount);
             Constant.vps_state.put(ipPool.getVps(),false);
         }
         List<AmazonTask> tasks = taskService.getTasks(Constant.max_task_num);
