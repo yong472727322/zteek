@@ -291,7 +291,7 @@ public class AdminController {
                 Constant.tasks.add(task);
             }
         }
-        return "redirct:/admin/taskList";
+        return "redirect:/admin/taskList";
     }
 
     /**
@@ -311,7 +311,7 @@ public class AdminController {
                 Constant.tasks.add(task);
             }
         }
-        return "redirct:/admin/taskList";
+        return "redirect:/admin/taskList";
     }
 
 
