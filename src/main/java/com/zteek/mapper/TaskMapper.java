@@ -46,4 +46,12 @@ public interface TaskMapper {
      * @return
      */
     Map<String,Integer> taskConsuming(@Param("taskId") Long taskId);
+
+    /**
+     * 根据ID更新任务状态
+     * @param status
+     * @param id
+     * @return
+     */
+    int updateTaskStatusById(@Param("status") int status, @Param("id") Long id);
 }

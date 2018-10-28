@@ -12,6 +12,7 @@
         <result column="runing_num" property="runingNum" />
         <result column="run_completed" property="runCompleted" />
         <result column="remaining" property="remaining" />
+        <result column="data_status" property="dataStatus" />
         <result column="created_by" property="createdBy" />
         <result column="created_date" property="createdDate" />
 
@@ -20,13 +21,18 @@
 
     </resultMap>
 
-    <!-- 按照级别倒序、创建时间升序，获取指定数量任务 by:leo,at:2018/10/18 -->
+    <!-- 按照级别倒序、创建时间升序，获取指定数量任务 by:leo,at:2018/10/18,up:leo,at:2018/10/28 -->
     <select id="getTasks" resultMap="BaseResultMap">
-         select id,args,run_num,run_completed,remaining from amazon_task t where t.remaining &gt; 0 order by t.level desc,t.created_date
+         select id,args,run_num,run_completed,remaining from amazon_task t where t.remaining &gt; 0 and t.data_status=1 order by t.level desc,t.created_date
         <if test="maxTaskNum != null and maxTaskNum != ''">
             LIMIT #{maxTaskNum}
         </if>
     </select>
+
+    <!-- 根据ID更新任务状态 by:leo,at:2018/10/28 -->
+    <update id="updateTaskStatusById">
+        update amazon_task set data_status=#{dataStatus} where id = #{id}
+    </update>
 
     <update id="updateTaskById">
         update amazon_task set runing_num = runing_num + 1,remaining = remaining -1 where id = #{id}
@@ -57,13 +63,16 @@
 
     <select id="getTaskList" resultMap="BaseResultMap">
       select
-        t.id,t.args,t.asin,t.`level`,t.site,t.run_num,t.runing_num,t.run_completed,t.remaining,t.created_by,t.created_date
+        t.id,t.args,t.asin,t.`level`,t.site,t.run_num,t.runing_num,t.run_completed,t.remaining,t.data_status,t.created_by,t.created_date
       from
           amazon_task t
        WHERE 1=1
           <if test="asin != null and asin != ''">
               and t.asin = #{asin}
           </if>
+        <if test="dataStatus != null and dataStatus != ''">
+            and t.data_status = #{dataStatus}
+        </if>
       order by t.`level` desc,t.created_date desc
     </select>
 

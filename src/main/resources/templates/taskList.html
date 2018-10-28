@@ -107,8 +107,18 @@
                     "mData": "id",
                     "orderable": false, // 禁用排序
                     "render": function (data, type, full, meta) {
+                        var dataStatus = full["dataStatus"];
                         var asin = full["asin"];
-                        return '<a href="/admin/taskDetail/'+asin+'" target="_blank">查看详情</a>';
+                        var start = "";
+                        var stop = "";
+                        if(1 == dataStatus){
+							//启用 状态 ，显示 停止
+                            stop = '<a style="text-decoration:none" href="/admin/taskStop/'+data+'" href="javascript:;" title="停止" class="ml-10"><i class="Hui-iconfont">&#xe6e4;</i></a>';
+						}else {
+                            start = '<a style="text-decoration:none" href="/admin/taskStart/'+data+'" title="开始" class="ml-10"><i class="Hui-iconfont">&#xe6e6;</i></a>';
+						}
+                        var detail = '<a style="text-decoration:none" href="/admin/taskDetail/'+asin+'" target="_blank" title="查看详情" class="ml-10"><i class="Hui-iconfont">&#xe725;</i></a>';
+						return start + stop + detail;
                     }
                 }
 

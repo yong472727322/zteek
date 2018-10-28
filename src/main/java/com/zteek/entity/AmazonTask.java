@@ -11,6 +11,7 @@ public class AmazonTask {
     private Integer runingNum;
     private Integer runCompleted;
     private Integer remaining;
+    private Integer dataStatus;
     private String createdBy;
     private Date createdDate;
 
@@ -21,6 +22,14 @@ public class AmazonTask {
     private String productName;
     private Date calendarDate;
     private Integer total;
+
+    public Integer getDataStatus() {
+        return dataStatus;
+    }
+
+    public void setDataStatus(Integer dataStatus) {
+        this.dataStatus = dataStatus;
+    }
 
     public Date getCalendarDate() {
         return calendarDate;

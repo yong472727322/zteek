@@ -43,6 +43,7 @@ public class AmazonController {
      */
     @RequestMapping("proxy")
     public ReturnResult proxy(String token, Long timestamp, String imei,HttpServletRequest request){
+        long startTime = System.currentTimeMillis();
         ReturnResult rr = new ReturnResult();
         String proxyIp = null;
         try{
@@ -101,7 +102,8 @@ public class AmazonController {
         }catch (Exception e){
             e.printStackTrace();
         }
-        logger.info("手机[{}]获取到的代理IP是[{}]",imei,proxyIp);
+        long endTime = System.currentTimeMillis();
+        logger.info("手机[{}]获取到的代理IP是[{}]，耗时[{}]毫秒",imei,proxyIp,(endTime-startTime));
         return rr;
     }
 
@@ -326,6 +328,7 @@ public class AmazonController {
         for(AmazonTask task : tasks){
             Constant.tasks.add(task);
         }
+        Constant.max_task_num = max;
         return tasks;
     }
 

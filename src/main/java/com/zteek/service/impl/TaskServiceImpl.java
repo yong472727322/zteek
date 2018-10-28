@@ -145,4 +145,10 @@ public class TaskServiceImpl implements TaskService {
     public Map<String, Integer> taskConsuming(Long taskId) {
         return taskMapper.taskConsuming(taskId);
     }
+
+    @Override
+    public int updateTaskStatusById(int status, Long id) {
+
+        return taskMapper.updateTaskStatusById(status,id);
+    }
 }

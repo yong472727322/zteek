@@ -75,4 +75,12 @@ public interface TaskService {
      * @return
      */
     Map<String, Integer> taskConsuming(Long taskId);
+
+    /**
+     * 根据ID更新任务状态
+     * @param status
+     * @param id
+     * @return
+     */
+    int updateTaskStatusById(int status, Long id);
 }

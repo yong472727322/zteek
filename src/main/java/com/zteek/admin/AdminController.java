@@ -274,6 +274,46 @@ public class AdminController {
         return i;
     }
 
+    /**
+     * 开始 任务
+     * @param id
+     * @return
+     */
+    @GetMapping("taskStart/{id}")
+    public String taskStart(@PathVariable("id") Long id){
+        int i = taskService.updateTaskStatusById(1,id);
+        if(i > 0){
+            //清空 内存中的任务
+            Constant.tasks.clear();
+            //重新 从数据库中查询
+            List<AmazonTask> tasks = taskService.getTasks(Constant.max_task_num);
+            for(AmazonTask task : tasks){
+                Constant.tasks.add(task);
+            }
+        }
+        return "taskList";
+    }
+
+    /**
+     * 停止 任务
+     * @param id
+     * @return
+     */
+    @GetMapping("taskStop")
+    public String taskStop(Long id){
+        int i = taskService.updateTaskStatusById(0,id);
+        if(i > 0){
+            //清空 内存中的任务
+            Constant.tasks.clear();
+            //重新 从数据库中查询
+            List<AmazonTask> tasks = taskService.getTasks(Constant.max_task_num);
+            for(AmazonTask task : tasks){
+                Constant.tasks.add(task);
+            }
+        }
+        return "taskList";
+    }
+
 
     @GetMapping("toLog")
     public String toLog(ModelMap map){
