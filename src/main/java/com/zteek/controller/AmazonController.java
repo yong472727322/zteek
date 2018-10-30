@@ -168,8 +168,14 @@ public class AmazonController {
      * 记录VPS的状态
      */
     @RequestMapping("recordVpsState")
-    public void recordVpsState(String vps,boolean state){
-        Constant.vps_state.put(vps,state);
+    public boolean recordVpsState(String vps,boolean state){
+        try{
+            Constant.vps_state.put(vps,state);
+            return true;
+        }catch (Exception e){
+            logger.error("记录VPS[{}]的状态[{}]失败。原因：[{}]",vps,state,e.getMessage());
+            return false;
+        }
     }
     /**
      * 保存IP
