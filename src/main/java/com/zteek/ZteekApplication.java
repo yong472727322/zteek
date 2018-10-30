@@ -1,10 +1,12 @@
 package com.zteek;
 
+import com.zteek.utils.EmbeddedTomcatConfiguration;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.servlet.MultipartConfigElement;
@@ -12,6 +14,7 @@ import javax.servlet.MultipartConfigElement;
 @EnableScheduling
 @SpringBootApplication
 @MapperScan("com.zteek.mapper")//将项目中对应的mapper类的路径加进来就可以了
+@Import(EmbeddedTomcatConfiguration.class)
 public class ZteekApplication {
 
     public static void main(String[] args) {
