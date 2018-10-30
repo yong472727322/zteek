@@ -371,6 +371,9 @@ public class AmazonController {
             case "vps_detail":
                 obj = Constant.vps_detail;
                 break;
+            case "vps_new_ip":
+                obj = Constant.vps_new_ip;
+                break;
             default:
                 obj = Constant.vps;
         }
