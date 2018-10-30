@@ -132,10 +132,12 @@ public class ClearUseTask {
             if(vpsState.getValue()){
                 String vps = vpsState.getKey();
                 Date date = Constant.vps_new_ip.get(vps);
-                if((now.getTime()-date.getTime()) > thirtyMin){
-                    String vpsIp = Constant.vps.get(vps);
-                    log.warn("此VPS[{}]的IP[{}]已经超过30分钟没有更换或更换IP时间超过30分钟，重新调用换IP",vps,vpsIp);
-                    ipUtil.changVpsIp(vpsIp);
+                if(null != date){
+                    if((now.getTime()-date.getTime()) > thirtyMin){
+                        String vpsIp = Constant.vps.get(vps);
+                        log.warn("此VPS[{}]的IP[{}]已经超过30分钟没有更换或更换IP时间超过30分钟，重新调用换IP",vps,vpsIp);
+                        ipUtil.changVpsIp(vpsIp);
+                    }
                 }
             }
         }
