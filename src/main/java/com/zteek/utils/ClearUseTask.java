@@ -117,4 +117,29 @@ public class ClearUseTask {
     }
 
 
+    /**
+     * 每20分钟 检测一次VPS的IP，防止一直显示在换，实际上已经换了的，只是状态没有更新。
+     */
+    @Scheduled(cron = "0 5/20 * * * ?")
+    public void changeVpsIp(){
+        log.info("定时任务，开始每20分钟 检测一次VPS的IP。");
+        //当前时间
+        Date now = new Date();
+        //30分钟
+        int thirtyMin = 30 * 60 * 1000;
+        for(Map.Entry<String,Boolean> vpsState : Constant.vps_state.entrySet()){
+            //找到 正在 更换IP 中的VPS
+            if(vpsState.getValue()){
+                String vps = vpsState.getKey();
+                Date date = Constant.vps_new_ip.get(vps);
+                if((now.getTime()-date.getTime()) > thirtyMin){
+                    String vpsIp = Constant.vps.get(vps);
+                    log.warn("此VPS[{}]的IP[{}]已经超过30分钟没有更换或更换IP时间超过30分钟，重新调用换IP",vps,vpsIp);
+                    ipUtil.changVpsIp(vpsIp);
+                }
+            }
+        }
+        log.info("定时任务，结束每20分钟 检测一次VPS的IP。");
+    }
+
 }

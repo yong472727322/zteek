@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -175,17 +176,19 @@ public class AmazonController {
      * @return
      */
     @RequestMapping("saveIP")
-    public void saveIP(IpPool ipPool){
+    public boolean saveIP(IpPool ipPool){
         int i = ipPoolService.insertIP(ipPool);
         String vps = ipPool.getVps();
         logger.info("VPS[{}]发送保存IP[{}]请求,保存结果[{}],ID[{}]", vps,ipPool.getIp(),i,ipPool.getId());
         if(1 == i){
             //VPS更换IP成功，修改状态
             changeIpSucess(vps, ipPool);
+            return true;
         }else {
             //再次请求VPS更换IP
             ipUtil.changVpsIp(ipPool.getIp());
         }
+        return false;
     }
 
     /**
@@ -193,7 +196,7 @@ public class AmazonController {
      * @return
      */
     @RequestMapping("recordIP")
-    public void recordIP(String ip,String vps){
+    public boolean recordIP(String ip,String vps){
         logger.info("记录vps[{}]发送过来的ip[{}]",vps,ip);
         //查询出数据库中最新的IP
         IpPool ipPool = ipPoolService.getNewIpByVps(vps);
@@ -208,8 +211,9 @@ public class AmazonController {
             logger.info("VPS[{}]是新加入的，直接插入数据库，结果[{}]",vps,i);
             if( 1 == i){
                 changeIpSucess(vps,ipPool);
+                return true;
             }
-            return;
+            return false;
         }
         String dbIP = ipPool.getIp();
         logger.info("VPS[{}]在数据库中最新的IP是[{}]",vps,dbIP);
@@ -226,8 +230,10 @@ public class AmazonController {
                 ipUtil.changVpsIp(ip);
             }else if(1 == i){
                 changeIpSucess(vps, ipPool);
+                return true;
             }
         }
+        return false;
     }
 
     /**
@@ -253,6 +259,8 @@ public class AmazonController {
     private void changeIpSucess(String vps, IpPool ipPool) {
         //VPS更换IP成功，修改状态
         Constant.vps_state.put(vps,false);
+        //设置新IP的时间
+        Constant.vps_new_ip.put(vps,new Date());
 
         //获取VPS前一个IP
         String preIp = Constant.vps.get(vps);

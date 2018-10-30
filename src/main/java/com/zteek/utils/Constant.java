@@ -74,4 +74,8 @@ public class Constant {
      */
     public static int changCount = DEFAULT_COUNT;
 
+    /**
+     * vps 最新IP的时间
+     */
+    public static Map<String,Date> vps_new_ip = new HashMap<>();
 }
