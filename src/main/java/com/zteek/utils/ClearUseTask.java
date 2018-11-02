@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.Map;
  * @author leo
  * @date 2018/10/25 09:36
  */
-@Controller
+@Component
 public class ClearUseTask {
     private static Logger log = LoggerFactory.getLogger(ClearUseTask.class);
 

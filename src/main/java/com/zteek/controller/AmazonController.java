@@ -34,6 +34,8 @@ public class AmazonController {
     private TaskService taskService;
     @Autowired
     private PhoneService phoneService;
+    @Autowired
+    private ClearUseTask clearUseTask;
 
     /**
      * 获取代理
@@ -322,12 +324,13 @@ public class AmazonController {
     }
 
     /**
-     * 获取 当前使用情况
+     * 手动 清除超时任务
      * @return
      */
-    @RequestMapping("getCurrentCount")
-    public Object getCurrentCount(){
-        return Constant.use;
+    @RequestMapping("clearUse")
+    public void clearUse(){
+        logger.info("手动 清除超时任务");
+        clearUseTask.clearUse();
     }
 
     /**
