@@ -13,6 +13,11 @@ port=$2
 username=$3
 password=$4
 
+#echo "本机拨号，防止网络问题。"
+#pppoe-stop
+#sleep 2
+#pppoe-start
+#sleep 15
 
 #1、创建VPS上的system-init.sh文件
 
@@ -48,14 +53,17 @@ echo "pppoe-start" >> /root/init-vps.sh
 echo "sleep 15" >> /root/init-vps.sh
 echo "echo '设置时区'" >> /root/init-vps.sh
 echo "ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime" >> /root/init-vps.sh
+echo "echo '安装 ss'" >> /root/init-vps.sh
+echo "yum -y install epel-release" >> /root/init-vps.sh
+echo "sleep 2" >> /root/init-vps.sh
+echo "yum -y install python-pip" >> /root/init-vps.sh
+echo "sleep 2" >> /root/init-vps.sh
+echo "pip install shadowsocks" >> /root/init-vps.sh
+echo "sleep 2" >> /root/init-vps.sh
 echo "echo '修改[/etc/rc.d/rc.local]文件'" >> /root/init-vps.sh
 echo "echo '/root/system-init.sh' >> /etc/rc.d/rc.local" >> /root/init-vps.sh
 echo "echo '修改[/etc/rc.d/rc.local]文件的权限'" >> /root/init-vps.sh
 echo "chmod u+x /etc/rc.d/rc.local" >> /root/init-vps.sh
-echo "echo '安装 ss'" >> /root/init-vps.sh
-echo "yum -y install epel-release" >> /root/init-vps.sh
-echo "yum -y install python-pip" >> /root/init-vps.sh
-echo "pip install shadowsocks" >> /root/init-vps.sh
 echo "完成写入内容到[init-vps.sh]"
 
 
