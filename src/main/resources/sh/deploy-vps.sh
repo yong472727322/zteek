@@ -52,7 +52,9 @@ echo "sleep 2" >> /root/init-vps.sh
 echo "pppoe-start" >> /root/init-vps.sh
 echo "sleep 15" >> /root/init-vps.sh
 echo "echo '设置时区'" >> /root/init-vps.sh
+echo "date" >> /root/init-vps.sh
 echo "ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime" >> /root/init-vps.sh
+echo "date" >> /root/init-vps.sh
 echo "echo '安装 ss'" >> /root/init-vps.sh
 echo "yum -y install epel-release" >> /root/init-vps.sh
 echo "sleep 2" >> /root/init-vps.sh
