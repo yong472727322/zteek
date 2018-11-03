@@ -137,10 +137,13 @@ expect "*]#*"
 
 send "echo '开放端口1819、4431'\r"
 expect "*]#*"
-send "/root/add-open-port.sh 1819 \r"
+send "firewall-cmd --zone=public --add-port=1819/tcp --permanent  \r"
 expect "*]#*"
-send "/root/add-open-port.sh 4431 \r"
+send "firewall-cmd --zone=public --add-port=4431/tcp --permanent  \r"
 expect "*]#*"
+send "echo '刷新防火墙'\r"
+expect "*]#*"
+send "firewall-cmd --reload  \r"
 send "logout\r"
 
 EOF
