@@ -66,27 +66,29 @@ public class IPUtil implements CommandLineRunner {
      * @return
      */
     public boolean changIp(boolean flag, String imei, String useIp) {
-//  todo      换代理之前，先判断有没有未使用过的代理
         /**
          * 根据手机识别码  找出 使用的IP 及 VPS
          */
 
-        //如果没有useIp，说明 是 因为IP 都使用过了，随机选择一个IP
         if(null == useIp){
-            for(Map.Entry<String,Map<String,Date>> map : Constant.use.entrySet()){
-                useIp = map.getKey();
-                break;
-            }
+            log.warn("没有传代理IP，直接返回失败。");
+            return false;
         }
 
         //手机使用的VPS
         String useVps = null;
-        for(Map.Entry<String,String> vps : Constant.vps.entrySet()){
-            String value = vps.getKey();
-            if(vps.getValue().equalsIgnoreCase(useIp)){
-                useVps = value;
+        if(Constant.vps.size() > 0){
+            for(Map.Entry<String,String> vps : Constant.vps.entrySet()){
+                String value = vps.getKey();
+                if(useIp.equalsIgnoreCase(vps.getValue())){
+                    useVps = value;
+                }
             }
+        }else {
+            log.warn("VPS还没有加载到内存，直接返回失败。");
+            return false;
         }
+
 
         //获取当前VPS的 目标数量
         Integer targetNum = Constant.vps_change.get(useVps);

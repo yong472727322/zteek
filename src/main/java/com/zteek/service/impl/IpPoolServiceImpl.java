@@ -129,7 +129,7 @@ public class IpPoolServiceImpl implements IpPoolService {
             //如果没有找到，说明内存中所有的IP都已经使用过了，发送更换IP请求
             if(null == notUseIp){
                 log.warn("没有找到，说明内存中所有的IP，手机[{}]都已经使用过了，发送更换IP请求",imei);
-                ipUtil.changIp(false,imei, null);
+//                ipUtil.changIp(false,imei, null);
                 return null;
             }
 

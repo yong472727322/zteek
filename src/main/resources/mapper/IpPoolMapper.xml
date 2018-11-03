@@ -26,6 +26,7 @@
         SELECT * FROM (
           SELECT * FROM ip_pool
           WHERE
+          vps is not null and ip is not null and account is not null and `password` is not null and
           create_date &gt; DATE_SUB(now(),INTERVAL 1 DAY)
           ORDER BY id DESC LIMIT 999999
           ) t
@@ -47,7 +48,7 @@
     </insert>
 
     <select id="checkIP" resultType="int">
-        select count(1) from ip_pool where vps=#{vps} and create_date &gt; DATE_SUB(now(),INTERVAL 1 HOUR)
+        select count(1) from ip_pool where ip=#{ip} and create_date &gt; DATE_SUB(now(),INTERVAL 1 HOUR)
     </select>
 
 </mapper>
