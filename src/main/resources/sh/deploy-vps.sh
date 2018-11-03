@@ -48,7 +48,9 @@ echo "#!/bin/bash" > /root/init-vps.sh
 echo "#VPS初始化" >> /root/init-vps.sh
 echo "echo '开始拨号'" >> /root/init-vps.sh
 echo "pppoe-stop" >> /root/init-vps.sh
-echo "sleep 2" >> /root/init-vps.sh
+echo "sleep 5" >> /root/init-vps.sh
+echo "/bin/systemctl stop NetworkManager.service" >> /root/init-vps.sh
+echo "sleep 5" >> /root/init-vps.sh
 echo "pppoe-start" >> /root/init-vps.sh
 echo "sleep 15" >> /root/init-vps.sh
 echo "echo '设置时区'" >> /root/init-vps.sh
