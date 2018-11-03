@@ -286,14 +286,6 @@ public class AmazonController {
         }
     }
 
-    /**
-     * 获取VPS当前IP
-     * @return
-     */
-    @RequestMapping("getIP")
-    public Object getIP(){
-        return Constant.vps;
-    }
 
     /**
      * 修改更换计数器
@@ -313,16 +305,7 @@ public class AmazonController {
         }
        return Constant.vps_change;
     }
-
-    /**
-     * 获取 计数器
-     * @return
-     */
-    @RequestMapping("getChangCount")
-    public Object getChangCount(){
-        return Constant.vps_change;
-    }
-
+    
     /**
      * 手动 清除超时任务
      * @return
