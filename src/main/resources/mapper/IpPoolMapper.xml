@@ -47,7 +47,7 @@
     </insert>
 
     <select id="checkIP" resultType="int">
-        select count(1) from ip_pool where ip=#{ip} and vps=#{vps} and create_date &gt; DATE_SUB(now(),INTERVAL 1 HOUR)
+        select count(1) from ip_pool where vps=#{vps} and create_date &gt; DATE_SUB(now(),INTERVAL 1 HOUR)
     </select>
 
 </mapper>
