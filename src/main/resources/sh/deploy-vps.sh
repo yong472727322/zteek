@@ -144,6 +144,7 @@ expect "*]#*"
 send "echo '刷新防火墙'\r"
 expect "*]#*"
 send "firewall-cmd --reload  \r"
+expect "*]#*"
 send "logout\r"
 
 EOF
