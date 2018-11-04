@@ -96,7 +96,7 @@ public class IPUtil implements CommandLineRunner {
         //获取当前VPS的 实际数量
         Map<String, Date> useRecord = Constant.use.get(useIp);
         if(null == useRecord){
-            log.warn("获取当前IP[{}]的使用记录，结果为[null]，可能是服务器重启了或VPS刚好切换了新IP。",useIp);
+//            log.warn("获取当前IP[{}]的使用记录，结果为[null]，可能是服务器重启了或VPS刚好切换了新IP。",useIp);
             return false;
         }
         //清除 使用时间，标识为 切换IP
