@@ -170,34 +170,47 @@ public class ClearUseTask {
     @Scheduled(cron = "30 7/20 * * * ?")
     public void changeVpsIp2(){
         log.error("定时任务，开始每20分钟 检测一次VPS，使用次数达到目标次数，并且都标记为null。。");
-        if(!Constant.use.isEmpty()){
-            for(Map.Entry<String,Map<String,Date>> use : Constant.use.entrySet()){
-                String ip = use.getKey();
-                Map<String, Date> phones = use.getValue();
-                int chg = 0;
-                int size = 0;
-                if(!phones.isEmpty()){
-                    size = phones.size();
-                    for(Map.Entry<String,Date> phone : phones.entrySet()){
-                        Date value = phone.getValue();
-                        if(null == value){
-                            chg ++;
+        if(!Constant.use.isEmpty()) {
+            try {
+                for (Map.Entry<String, Map<String, Date>> use : Constant.use.entrySet()) {
+                    String ip = use.getKey();
+                    Map<String, Date> phones = use.getValue();
+                    int chg = 0;
+                    int size = 0;
+                    if (!phones.isEmpty()) {
+                        size = phones.size();
+                        for (Map.Entry<String, Date> phone : phones.entrySet()) {
+                            Date value = phone.getValue();
+                            if (null == value) {
+                                chg++;
+                            }
                         }
                     }
-                }
-                Integer targeNum = null;
-                //得到此IP对应的VPS的目标使用次数
-                for(Map.Entry<String,String> vps : Constant.vps.entrySet()){
-                    String vpsIp = vps.getValue();
-                    if(vpsIp.equalsIgnoreCase(ip)){
-                        targeNum = Constant.vps_change.get(vps.getKey());
-                        break;
+                    Integer targeNum = null;
+                    //得到此IP对应的VPS的目标使用次数
+                    for (Map.Entry<String, String> vps : Constant.vps.entrySet()) {
+                        String vpsIp = vps.getValue();
+                        if (vpsIp.equalsIgnoreCase(ip)) {
+                            targeNum = Constant.vps_change.get(vps.getKey());
+                            break;
+                        }
+                    }
+                    if (chg >= targeNum && chg >= size) {
+                        log.warn("此IP[{}]已经达到目标次数[{}]，并且标记为切换的数量为[{}]，切换IP", ip, targeNum, chg);
+                        ipUtil.changVpsIp(ip);
                     }
                 }
-                if(chg >= targeNum && chg >= size){
-                    log.warn("此IP[{}]已经达到目标次数[{}]，并且标记为切换的数量为[{}]，切换IP",ip,targeNum,chg);
-                    ipUtil.changVpsIp(ip);
+            }catch (ConcurrentModificationException e){
+                try {
+                    int i = new Random().nextInt(5000);
+                    log.warn("有正在操作Constant.use，随机暂停[{}]毫秒，再次调用。",i);
+                    Thread.sleep(i);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
                 }
+                changeVpsIp2();
+            }catch (Exception e){
+                log.error("定时任务，每20分钟 检测一次VPS，使用次数达到目标次数，并且都标记为null。出错，错误：[{}]",e);
             }
         }
         log.error("定时任务，结束每20分钟 检测一次VPS，使用次数达到目标次数，并且都标记为null。。");
