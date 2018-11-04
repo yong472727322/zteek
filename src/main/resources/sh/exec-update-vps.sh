@@ -5,7 +5,7 @@
 
 starttime=`date +'%Y-%m-%d %H:%M:%S'`
 
-cat /root/update_vps/vps.txt | while read myline
+cat /root/deploy/vps.txt | while read myline
 do
 if [ -z "$myline" ]
 then
@@ -27,30 +27,54 @@ expect << EOF
 
 set timeout 3600
 
+spawn echo "执行SSH登录"
+spawn ssh -p $port root@$host
+expect {
+	"*yes/no" { send "yes\r"; exp_continue }
+	"*password:" { send "$password\r" }
+}
+expect "*]#*"
+send "mkdir jars\r"
+expect "*]#*"
+send "logout\r"
+expect "*]#*"
+sleep 3
+
 spawn echo "拷贝文件xinghuo-0.0.1-SNAPSHOT.jar"
-spawn /usr/bin/scp -P $port /root/apk/xinghuo-0.0.1-SNAPSHOT.jar $username@$host:/root/jars/
+spawn /usr/bin/scp -P $port /root/deploy/xinghuo-0.0.1-SNAPSHOT.jar $username@$host:/root/jars/
 expect {
 "*yes/no" { send "yes\r"; exp_continue }
 "*password:" { send "$password\r" }
 }
 expect "*]#*"
 
-spawn echo "拷贝文件update-vps"
-spawn /usr/bin/scp -P $port /root/update_vps/update-vps.sh $username@$host:/root/
+spawn echo "执行SSH登录2"
+spawn ssh -p $port root@$host
 expect {
-"*yes/no" { send "yes\r"; exp_continue }
-"*password:" { send "$password\r" }
+	"*yes/no" { send "yes\r"; exp_continue }
+	"*password:" { send "$password\r" }
 }
 expect "*]#*"
 
-spawn ssh -p $port $username@$host
-expect {
-"*yes/no" { send "yes\r"; exp_continue }
-"*password:" { send "$password\r" }
-}
+
+send "pid=$(ps -A |grep "java"| awk '{print $1}')\r"
 expect "*]#*"
 
-send "/root/update-vps.sh \r"
+spawn echo "找到PID:"$pid
+expect "*]#*"
+spawn echo "杀死进程:"$pid
+expect "*]#*"
+send "kill -9 $pid \r"
+expect "*]#*"
+spawn echo "移动JAR包"
+expect "*]#*"
+send "mv /root/jars/xinghuo-0.0.1-SNAPSHOT.jar /root/ \r"
+expect "*]#*"
+spawn echo "执行脚本:/root/system-init.sh"
+send "/root/system-init.sh \r"
+
+
+#send "/root/update-vps.sh \r"
 
 expect "*]#*"
 

@@ -159,7 +159,7 @@ public class IPUtil implements CommandLineRunner {
         try {
             HttpGet httpGet = new HttpGet(url);
             //设置请求和传输超时时间
-            RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(2000).setConnectTimeout(2000).build();
+            RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(60000).setConnectTimeout(60000).build();
             httpGet.setConfig(requestConfig);
             log.info("发送GET请求到[{}]", url);
             httpCilent.execute(httpGet);

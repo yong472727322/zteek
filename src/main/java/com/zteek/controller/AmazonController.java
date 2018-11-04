@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -231,7 +232,7 @@ public class AmazonController {
             ipPool.setIp(ip);
             ipPool.setVps(vps);
             int i = ipPoolService.insertIP(ipPool);
-            logger.warn("VPS[{}]数据库最新IP[{}]和发送过来的IP[{}]不一致，更新数据库。结果[{}]",vps,dbIP,ip,i);
+            logger.info("VPS[{}]数据库最新IP[{}]和发送过来的IP[{}]不一致，更新数据库。结果[{}]",vps,dbIP,ip,i);
             if(0 == i){
                 //此IP重复，发送切换IP请求到VPS
                 logger.warn("此IP[{}]重复，发送切换IP请求到VPS[{}]",ip,vps);
@@ -312,9 +313,20 @@ public class AmazonController {
      */
     @RequestMapping("clearUse")
     public void clearUse(){
-        logger.info("手动 清除超时任务");
+        logger.warn("手动 清除超时任务");
         clearUseTask.clearUse();
     }
+
+    /**
+     * 手动 检测VPS的状态
+     * @return
+     */
+    @RequestMapping("changeVpsIp")
+    public void changeVpsIp(){
+        logger.warn("手动 检测VPS的状态");
+        clearUseTask.changeVpsIp();
+    }
+
 
     /**
      * 修改同时执行的任务个数
@@ -330,6 +342,18 @@ public class AmazonController {
         }
         Constant.max_task_num = max;
         return tasks;
+    }
+
+    /**
+     * 获取VPS的IP
+     */
+    @RequestMapping("getVpsIp")
+    public String getVpsIp(String vps){
+        String vpsIp = Constant.vps.get(vps);
+        Boolean vpsState = Constant.vps_state.get(vps);
+        Date date = Constant.vps_new_ip.get(vps);
+        date = date == null ? new Date(2018,10,10) : date;
+        return vpsIp+"--"+vpsState+"--"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)+"--"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
     }
 
 
