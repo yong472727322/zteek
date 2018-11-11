@@ -4,6 +4,7 @@ import com.zteek.entity.Account;
 import com.zteek.entity.AmazonTaskRun;
 import com.zteek.service.AccountService;
 import com.zteek.service.TaskService;
+import com.zteek.utils.IPUtil;
 import com.zteek.utils.ReturnResult;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -106,7 +108,8 @@ public class TaskController {
      * @return object为空表示没有任务
      */
     @RequestMapping("getTask")
-    public ReturnResult getTask(String imei){
+    public ReturnResult getTask(HttpServletRequest request,String imei){
+        String ip = IPUtil.getIp(request);
         ReturnResult rr = new ReturnResult();
         if(StringUtils.isEmpty(imei)){
             rr.setCode("9999");
@@ -114,9 +117,9 @@ public class TaskController {
             rr.setObject("imei不能为空");
             return rr;
         }
-        logger.info("手机[{}]获取新任务",imei);
         try{
-            AmazonTaskRun atr = taskService.getTask(imei);
+            logger.info("手机[{}]使用代理IP[{}]获取新任务",imei,ip);
+            AmazonTaskRun atr = taskService.getTask(imei,ip);
             rr.setObject(atr);
         }catch (Exception e){
             logger.info("手机[{}]获取新任务出错，原因：[{}]",imei,e);

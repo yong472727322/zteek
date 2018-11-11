@@ -78,4 +78,26 @@ public class Constant {
      * vps 最新IP的时间
      */
     public static Map<String,Date> vps_new_ip = new HashMap<>();
+
+
+    /**
+     * 默认一个IP一台手机最大跑的任务个数
+     */
+    public static final int DEFAULT_IP_PHONE_MAX_TASK_NUM = 3;
+
+    /**
+     * 一个IP一台手机最大跑的任务个数
+     */
+    public static int ipPhoneMaxTaskNum = DEFAULT_IP_PHONE_MAX_TASK_NUM;
+
+    /**
+     * 手机，单个IP，执行任务个数
+     */
+    public static Map<String,Integer> phone_ip_task = new HashMap<>();
+
+    /**
+     * 记录手机跑的任务数
+     */
+    public static Map<String,List<Map<String,Map<Long,Date>>>> ip_phone_max = new HashMap<>();
+
 }

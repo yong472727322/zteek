@@ -1,5 +1,6 @@
 package com.zteek.service.impl;
 
+import com.sun.corba.se.impl.encoding.CDROutputStream_1_0;
 import com.zteek.entity.AmazonTask;
 import com.zteek.entity.AmazonTaskRun;
 import com.zteek.mapper.TaskMapper;
@@ -12,9 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -26,15 +25,15 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public synchronized AmazonTaskRun getTask(String imei) {
-
+    public synchronized AmazonTaskRun getTask(String imei, String proxyIp) {
         //任务个数
-        int size = Constant.tasks.size();
-        log.info("手机[{}]获取任务，当前内存任务个数[{}]",imei,size);
-        if(size < 1){
+        if(Constant.tasks.isEmpty()){
             //没有任务
+            log.warn("没有任务。。。");
             return null;
         }
+        int size = Constant.tasks.size();
+        log.info("手机[{}]获取任务，当前内存任务个数[{}]",imei,size);
         int cc = 0;
         //循环获取，防止获取到的任务已经执行完成，但是内存没有更新
         AmazonTask task = null;
@@ -59,8 +58,79 @@ public class TaskServiceImpl implements TaskService {
         }
 
         if(null == task){
+            log.warn("获取任务，结果[null]");
             return null;
         }
+
+        //验证  一个IP一台手机最大跑的任务个数
+
+        if(!Constant.ip_phone_max.isEmpty()){
+            List<Map<String, Map<Long, Date>>> map2 = Constant.ip_phone_max.get(proxyIp);
+            //使用IP的手机个数
+            int useIpPhones = map2.size();
+            log.error("检测手机[{}]，使用IP[{}]的手机个数[{}]",imei,proxyIp, useIpPhones);
+            if(Constant.phone_ip_task.isEmpty()){
+                Constant.phone_ip_task.put(imei,Constant.ipPhoneMaxTaskNum);
+            }else if(null == Constant.phone_ip_task.get(imei) || Constant.phone_ip_task.get(imei) > size){
+                Constant.phone_ip_task.put(imei,size);
+            }
+            if(useIpPhones > 0){
+                Map<String, Map<Long, Date>> mapp = new HashMap<>();
+                for (Map<String, Map<Long, Date>> map : map2){
+                    mapp = map;
+                    Map<Long, Date> map3 = map.get(imei);
+                    if(null != map3){
+                        if(map3.size() >= Constant.phone_ip_task.get(imei)){
+                            log.error("手机[{}]使用IP[{}]执行任务次数[{}]达到目标次数[{}]",imei,proxyIp,map3.size(),Constant.phone_ip_task.get(imei));
+                            return null;
+                        }
+                        Date date = map3.get(task.getId());
+                        if(null != date){
+                            log.error("任务[{}]已经被手机[{}]用IP[{}]执行过，返回失败，重新获取。",task.getId(),imei,proxyIp);
+                            return null;
+                        }else {
+                            log.error("任务[{}]没有被手机[{}]用IP[{}]执行过，返回任务。",task.getId(),imei,proxyIp);
+                            map3.put(task.getId(),new Date());
+                        }
+                    }else {
+                        log.error("手机[{}]第一次使用IP[{}]获取任务[{}]。",imei,proxyIp,task.getId());
+                        Map<Long, Date> map4 = new HashMap<>();
+                        map4.put(task.getId(),new Date());
+                        map.put(imei,map4);
+                    }
+                }
+                map2.add(mapp);
+            }else {
+                log.error("手机[{}]第一次使用IP[{}]获取任务",imei,proxyIp);
+
+                Map<Long,Date> taskMap = new HashMap<>();
+                taskMap.put(task.getId(),new Date());
+
+                Map<String,Map<Long,Date>> phoneMap = new HashMap<>();
+                phoneMap.put(imei,taskMap);
+
+                List<Map<String,Map<Long,Date>>> list = new ArrayList<>();
+                list.add(phoneMap);
+
+                Constant.ip_phone_max.put(proxyIp,list);
+            }
+        }else {
+            //第一个进来取任务的手机
+            log.error("手机[{}]使用IP[{}]第一个进来取任务",imei,proxyIp);
+
+            Map<Long,Date> taskMap = new HashMap<>();
+            taskMap.put(task.getId(),new Date());
+
+            Map<String,Map<Long,Date>> phoneMap = new HashMap<>();
+            phoneMap.put(imei,taskMap);
+
+            List<Map<String,Map<Long,Date>>> list = new ArrayList<>();
+            list.add(phoneMap);
+
+            Constant.ip_phone_max.put(proxyIp,list);
+        }
+        log.error("手机[{}]使用IP[{}]获取到任务[{}]",imei,proxyIp,task.getId());
+
 
         //修改任务执行数量的情况
         task.setRemaining(task.getRemaining()-1);

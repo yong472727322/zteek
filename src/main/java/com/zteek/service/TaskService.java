@@ -11,9 +11,10 @@ public interface TaskService {
     /**
      * 获取任务
      * @param imei
+     * @param ip
      * @return
      */
-    AmazonTaskRun getTask(String imei);
+    AmazonTaskRun getTask(String imei, String ip);
 
     int endTask(AmazonTaskRun atr);
 

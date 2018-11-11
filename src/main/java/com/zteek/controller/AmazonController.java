@@ -106,6 +106,9 @@ public class AmazonController {
         }catch (Exception e){
             e.printStackTrace();
         }
+
+        Constant.phone_ip_task.put(imei,Constant.ipPhoneMaxTaskNum);
+
         long endTime = System.currentTimeMillis();
         logger.info("手机[{}]获取到的代理IP是[{}]，耗时[{}]毫秒",imei,proxyIp,(endTime-startTime));
         return rr;
@@ -285,6 +288,11 @@ public class AmazonController {
         if(!Constant.vps_change.containsKey(vps)){
             Constant.vps_change.put(vps,Constant.changCount);
         }
+
+        //清除IP使用记录
+        if(!Constant.ip_phone_max.isEmpty()) {
+            Constant.ip_phone_max.remove(ipPool.getIp());
+        }
     }
 
 
@@ -389,6 +397,9 @@ public class AmazonController {
                 break;
             case "vps_new_ip":
                 obj = Constant.vps_new_ip;
+                break;
+            case "ip_phone_max":
+                obj = Constant.ip_phone_max;
                 break;
             default:
                 obj = Constant.vps;
