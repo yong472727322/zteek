@@ -54,4 +54,33 @@ public interface TaskMapper {
      * @return
      */
     int updateTaskStatusById(@Param("dataStatus") int dataStatus, @Param("id") Long id);
+
+
+
+
+
+    /**
+     * PC端获取任务: 1：完成次数<执行次数  2：状态是：运行中
+     *      按照  任务级别 降序 ， 创建时间 升序
+     * @return
+     */
+    AmazonTask getTaskForPC();
+    /**
+     * 更新PC端任务
+     * @param id
+     * @return
+     */
+    int updatePCTaskById(Long id);
+    /**
+     * 添加PC端任务
+     * @param task
+     * @return
+     */
+    int insertPCTask(AmazonTaskRun task);
+    /**
+     * 获取PC端任务列表
+     * @param param
+     * @return
+     */
+    List<AmazonTaskRun> getPCTaskList(Map<String, Object> param);
 }

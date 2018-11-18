@@ -64,71 +64,71 @@ public class TaskServiceImpl implements TaskService {
 
         //验证  一个IP一台手机最大跑的任务个数
 
-        if(!Constant.ip_phone_max.isEmpty()){
-            List<Map<String, Map<Long, Date>>> map2 = Constant.ip_phone_max.get(proxyIp);
-            //使用IP的手机个数
-            int useIpPhones = map2.size();
-            log.error("检测手机[{}]，使用IP[{}]的手机个数[{}]",imei,proxyIp, useIpPhones);
-            if(Constant.phone_ip_task.isEmpty()){
-                Constant.phone_ip_task.put(imei,Constant.ipPhoneMaxTaskNum);
-            }else if(null == Constant.phone_ip_task.get(imei) || Constant.phone_ip_task.get(imei) > size){
-                Constant.phone_ip_task.put(imei,size);
-            }
-            if(useIpPhones > 0){
-                Map<String, Map<Long, Date>> mapp = new HashMap<>();
-                for (Map<String, Map<Long, Date>> map : map2){
-                    mapp = map;
-                    Map<Long, Date> map3 = map.get(imei);
-                    if(null != map3){
-                        if(map3.size() >= Constant.phone_ip_task.get(imei)){
-                            log.error("手机[{}]使用IP[{}]执行任务次数[{}]达到目标次数[{}]",imei,proxyIp,map3.size(),Constant.phone_ip_task.get(imei));
-                            return null;
-                        }
-                        Date date = map3.get(task.getId());
-                        if(null != date){
-                            log.error("任务[{}]已经被手机[{}]用IP[{}]执行过，返回失败，重新获取。",task.getId(),imei,proxyIp);
-                            return null;
-                        }else {
-                            log.error("任务[{}]没有被手机[{}]用IP[{}]执行过，返回任务。",task.getId(),imei,proxyIp);
-                            map3.put(task.getId(),new Date());
-                        }
-                    }else {
-                        log.error("手机[{}]第一次使用IP[{}]获取任务[{}]。",imei,proxyIp,task.getId());
-                        Map<Long, Date> map4 = new HashMap<>();
-                        map4.put(task.getId(),new Date());
-                        map.put(imei,map4);
-                    }
-                }
-                map2.add(mapp);
-            }else {
-                log.error("手机[{}]第一次使用IP[{}]获取任务",imei,proxyIp);
-
-                Map<Long,Date> taskMap = new HashMap<>();
-                taskMap.put(task.getId(),new Date());
-
-                Map<String,Map<Long,Date>> phoneMap = new HashMap<>();
-                phoneMap.put(imei,taskMap);
-
-                List<Map<String,Map<Long,Date>>> list = new ArrayList<>();
-                list.add(phoneMap);
-
-                Constant.ip_phone_max.put(proxyIp,list);
-            }
-        }else {
-            //第一个进来取任务的手机
-            log.error("手机[{}]使用IP[{}]第一个进来取任务",imei,proxyIp);
-
-            Map<Long,Date> taskMap = new HashMap<>();
-            taskMap.put(task.getId(),new Date());
-
-            Map<String,Map<Long,Date>> phoneMap = new HashMap<>();
-            phoneMap.put(imei,taskMap);
-
-            List<Map<String,Map<Long,Date>>> list = new ArrayList<>();
-            list.add(phoneMap);
-
-            Constant.ip_phone_max.put(proxyIp,list);
-        }
+//        if(!Constant.ip_phone_max.isEmpty()){
+//            List<Map<String, Map<Long, Date>>> map2 = Constant.ip_phone_max.get(proxyIp);
+//            //使用IP的手机个数
+//            int useIpPhones = map2.size();
+//            log.error("检测手机[{}]，使用IP[{}]的手机个数[{}]",imei,proxyIp, useIpPhones);
+//            if(Constant.phone_ip_task.isEmpty()){
+//                Constant.phone_ip_task.put(imei,Constant.ipPhoneMaxTaskNum);
+//            }else if(null == Constant.phone_ip_task.get(imei) || Constant.phone_ip_task.get(imei) > size){
+//                Constant.phone_ip_task.put(imei,size);
+//            }
+//            if(useIpPhones > 0){
+//                Map<String, Map<Long, Date>> mapp = new HashMap<>();
+//                for (Map<String, Map<Long, Date>> map : map2){
+//                    mapp = map;
+//                    Map<Long, Date> map3 = map.get(imei);
+//                    if(null != map3){
+//                        if(map3.size() >= Constant.phone_ip_task.get(imei)){
+//                            log.error("手机[{}]使用IP[{}]执行任务次数[{}]达到目标次数[{}]",imei,proxyIp,map3.size(),Constant.phone_ip_task.get(imei));
+//                            return null;
+//                        }
+//                        Date date = map3.get(task.getId());
+//                        if(null != date){
+//                            log.error("任务[{}]已经被手机[{}]用IP[{}]执行过，返回失败，重新获取。",task.getId(),imei,proxyIp);
+//                            return null;
+//                        }else {
+//                            log.error("任务[{}]没有被手机[{}]用IP[{}]执行过，返回任务。",task.getId(),imei,proxyIp);
+//                            map3.put(task.getId(),new Date());
+//                        }
+//                    }else {
+//                        log.error("手机[{}]第一次使用IP[{}]获取任务[{}]。",imei,proxyIp,task.getId());
+//                        Map<Long, Date> map4 = new HashMap<>();
+//                        map4.put(task.getId(),new Date());
+//                        map.put(imei,map4);
+//                    }
+//                }
+//                map2.add(mapp);
+//            }else {
+//                log.error("手机[{}]第一次使用IP[{}]获取任务",imei,proxyIp);
+//
+//                Map<Long,Date> taskMap = new HashMap<>();
+//                taskMap.put(task.getId(),new Date());
+//
+//                Map<String,Map<Long,Date>> phoneMap = new HashMap<>();
+//                phoneMap.put(imei,taskMap);
+//
+//                List<Map<String,Map<Long,Date>>> list = new ArrayList<>();
+//                list.add(phoneMap);
+//
+//                Constant.ip_phone_max.put(proxyIp,list);
+//            }
+//        }else {
+//            //第一个进来取任务的手机
+//            log.error("手机[{}]使用IP[{}]第一个进来取任务",imei,proxyIp);
+//
+//            Map<Long,Date> taskMap = new HashMap<>();
+//            taskMap.put(task.getId(),new Date());
+//
+//            Map<String,Map<Long,Date>> phoneMap = new HashMap<>();
+//            phoneMap.put(imei,taskMap);
+//
+//            List<Map<String,Map<Long,Date>>> list = new ArrayList<>();
+//            list.add(phoneMap);
+//
+//            Constant.ip_phone_max.put(proxyIp,list);
+//        }
         log.error("手机[{}]使用IP[{}]获取到任务[{}]",imei,proxyIp,task.getId());
 
 
@@ -220,5 +220,35 @@ public class TaskServiceImpl implements TaskService {
     public int updateTaskStatusById(int status, Long id) {
 
         return taskMapper.updateTaskStatusById(status,id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AmazonTask getTaskForPC() {
+        try{
+            AmazonTask task = taskMapper.getTaskForPC();
+            if(null == task){
+                return null;
+            }
+            //更新任务
+            int i = taskMapper.updatePCTaskById(task.getId());
+            if(i > 0){
+                return task;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public int insertPCTask(AmazonTaskRun task) {
+        return taskMapper.insertPCTask(task);
+    }
+
+    @Override
+    public List<AmazonTaskRun> getPCTaskList(Map<String, Object> param) {
+        return taskMapper.getPCTaskList(param);
     }
 }

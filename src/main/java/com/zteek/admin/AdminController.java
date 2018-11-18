@@ -3,16 +3,14 @@ package com.zteek.admin;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.zteek.entity.AmazonTask;
-import com.zteek.entity.DatatablesView;
-import com.zteek.entity.PhoneLog;
-import com.zteek.entity.User;
+import com.zteek.entity.*;
 import com.zteek.exception.BusinessException;
 import com.zteek.service.PhoneService;
 import com.zteek.service.TaskService;
 import com.zteek.service.UserService;
 import com.zteek.utils.Constant;
 import com.zteek.utils.ReturnResult;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -349,6 +347,51 @@ public class AdminController {
             rr.setObject("系统错误。");
         }
         return rr;
+    }
+
+
+
+
+
+    @GetMapping("toPCTaskAdd")
+    public String toPCTaskAdd(){
+        return "pcTaskAdd";
+    }
+    /**
+     * 添加PC端任务
+     * @param task
+     * @return
+     */
+    @ResponseBody
+    @PostMapping("pcTaskAdd")
+    public Integer pcTaskAdd(HttpServletRequest request, AmazonTaskRun task){
+        int i = 0;
+        try{
+            logger.info("添加PC端任务，任务参数[{}]",task);
+            if(StringUtils.isNotEmpty(task.getProductName())){
+                task.setProductName(task.getProductName().trim());
+            }
+            i = taskService.insertPCTask(task);
+            logger.info("添加PC端任务[{}]，结果：[{}]",task.getAsin(),i);
+        }catch (Exception e){
+            logger.error("添加PC端任务出错，原因:[{}]",e);
+        }
+        return i;
+    }
+    @GetMapping("pcTaskList")
+    public String pcTaskList(){
+        return "pcTaskList";
+    }
+    @ResponseBody
+    @RequestMapping("pcTaskData")
+    public Object pcTaskData(int iDisplayStart,int iDisplayLength){
+        PageHelper.startPage((iDisplayStart/iDisplayLength)+1,iDisplayLength);
+        List<AmazonTaskRun> taskList = taskService.getPCTaskList(null);
+        PageInfo<AmazonTaskRun> pageInfo = new PageInfo<>(taskList);
+        DatatablesView<AmazonTaskRun> dataView = new DatatablesView<>();
+        dataView.setRecordsTotal(Integer.parseInt(pageInfo.getTotal()+""));
+        dataView.setData(taskList);
+        return dataView;
     }
 
 }

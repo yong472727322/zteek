@@ -14,6 +14,63 @@ public class AmazonTaskRun {
     private Date endTime;
     private String consuming;
 
+
+    //PC端任务参数
+    private String asin;
+    private String productName;
+    private Integer runNum;
+    private Integer completedNum;
+    private String url;
+    private Integer level;
+
+    public String getAsin() {
+        return asin;
+    }
+
+    public void setAsin(String asin) {
+        this.asin = asin;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public Integer getRunNum() {
+        return runNum;
+    }
+
+    public void setRunNum(Integer runNum) {
+        this.runNum = runNum;
+    }
+
+    public Integer getCompletedNum() {
+        return completedNum;
+    }
+
+    public void setCompletedNum(Integer completedNum) {
+        this.completedNum = completedNum;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
+    }
+
     public String getArgs() {
         return args;
     }

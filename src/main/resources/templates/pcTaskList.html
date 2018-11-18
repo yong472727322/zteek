@@ -1,0 +1,129 @@
+﻿<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+	<div th:replace="_meta :: meta"></div>
+	<div th:replace="_meta :: script"></div>
+	<div th:replace="_meta :: link"></div>
+
+	<title>任务列表 - 后台管理系统 v1.0</title>
+	<meta name="keywords" content="H-ui.admin v3.0,H-ui网站后台模版,后台模版下载,后台管理系统模版,HTML后台模版下载">
+	<meta name="description" content="H-ui.admin v3.0，是一款由国人开发的轻量级扁平化网站后台模板，完全免费开源的网站后台管理系统模版，适合中小型CMS后台系统。">
+</head>
+<body>
+	<div th:replace="_header :: header"></div>
+
+	<div th:replace="_menu :: aside"></div>
+
+	<section class="Hui-article-box">
+		<nav class="breadcrumb"><i class="Hui-iconfont"></i> <a href="/" class="maincolor">首页</a>
+			<span class="c-999 en">&gt;</span>
+			<span class="c-666">PC端任务列表</span>
+			<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+		<div class="Hui-article">
+			<article class="cl pd-20">
+
+				<div class="cl pd-5 bg-1 bk-gray mt-20"> <span class="l">
+					<span>
+						<a href="javascript:void(0);" onclick="task_add('添加PC端任务','toPCTaskAdd','','510')" class="btn btn-primary radius">
+							<i class="Hui-iconfont">&#xe600;添加PC端任务</i>
+						</a>
+					</span>
+				</div>
+
+				<div class="mt-20">
+					<table id="table_id_example" class="table table-border table-bordered table-hover table-bg table-sort">
+						<thead>
+							<tr class="text-c">
+								<th width="100">ASIN</th>
+								<th width="140">产品链接</th>
+								<th width="200">产品名称</th>
+								<th width="80">任务级别</th>
+								<th width="80">执行次数</th>
+								<th width="80">完成次数</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</article>
+
+			<div th:replace="_footer :: footer"></div>
+		</div>
+	</section>
+
+	<div th:replace="_footer :: script"></div>
+	<script type="text/javascript" src="/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript">
+
+	$(function(){
+
+        $('#table_id_example').DataTable({
+            // draw: 1,//标识可以避免因ajax的异步性而导致展示错误数据
+            // recordsFiltered: 10,//过滤后数据总条数
+            // recordsTotal: 10,//过滤前数据总条数
+//            scrollY: 300,//滚动条高度
+            paging: true,//是否支持分页
+            serverSide: true,//是否支持服务器处理
+            // 'bStateSave': true,// 状态保存
+            // 'processing': true, // 打开数据加载时的等待效果
+			'lengthMenu':[10,20,50,100],
+            'sAjaxSource': '/admin/pcTaskData',
+            'fnServerData': function (sSource,aoData,fnCallback,oSettings) {
+                oSettings.jqXHR = $.ajax({
+                    'dataType': 'json',
+                    'type': 'GET',
+                    'url': sSource,
+                    'data': aoData,
+                    'success': function (data) {
+                        fnCallback(data);
+                    },
+                    'error': function (e) {
+                        console.log(e.message);
+                    }
+                });
+            },
+            columns: [
+                { data: 'asin',"orderable": false  },
+                { data: 'url',"orderable": false  },
+                { data: 'productName' ,"orderable": false },
+                { data: 'level',"orderable": false  },
+                { data: 'runNum',"orderable": false  },
+                { data: 'completedNum',"orderable": false  }
+                // {
+                //     "mData": "id",
+                //     "orderable": false, // 禁用排序
+                //     "render": function (data, type, full, meta) {
+                //         var dataStatus = full["dataStatus"];
+                //         var asin = full["asin"];
+                //         var start = "";
+                //         var stop = "";
+                //         if(1 == dataStatus){
+				// 			//启用 状态 ，显示 停止
+                //             stop = '<a style="text-decoration:none" href="/admin/taskStop/'+data+'" href="javascript:;" title="停止" class="ml-10"><i class="Hui-iconfont">&#xe6e4;</i></a>';
+				// 		}else {
+                //             start = '<a style="text-decoration:none" href="/admin/taskStart/'+data+'" title="开始" class="ml-10"><i class="Hui-iconfont">&#xe6e6;</i></a>';
+				// 		}
+                //         var detail = '<a style="text-decoration:none" href="/admin/taskDetail/'+asin+'" target="_blank" title="查看详情" class="ml-10"><i class="Hui-iconfont">&#xe725;</i></a>';
+				// 		return start + stop + detail;
+                //     }
+                // }
+
+            ]
+        });
+
+
+	});
+
+    /*任务-添加*/
+    function task_add(title,url,w,h){
+        layer_show(title,url,w,h);
+    }
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+
+</body>
+</html>

@@ -84,4 +84,24 @@ public interface TaskService {
      * @return
      */
     int updateTaskStatusById(int status, Long id);
+
+
+
+    /**
+     * PC端获取任务
+     * @return
+     */
+    AmazonTask getTaskForPC();
+    /**
+     * 添加PC端任务
+     * @param task
+     * @return
+     */
+    int insertPCTask(AmazonTaskRun task);
+    /**
+     * 获取PC端任务列表
+     * @param param
+     * @return
+     */
+    List<AmazonTaskRun> getPCTaskList(Map<String,Object> param);
 }

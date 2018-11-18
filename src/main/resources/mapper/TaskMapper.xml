@@ -19,6 +19,14 @@
         <result column="calendar_date" property="calendarDate" />
         <result column="total" property="total" />
 
+
+
+        <result column="asin" property="asin" />
+        <result column="product_name" property="productName" />
+        <result column="run_num" property="runNum" />
+        <result column="completed_num" property="completedNum" />
+        <result column="url" property="url" />
+        <result column="level" property="level" />
     </resultMap>
 
     <!-- 按照级别倒序、创建时间升序，获取指定数量任务 by:leo,at:2018/10/18,up:leo,at:2018/10/28 -->
@@ -183,5 +191,31 @@
     </select>
 
 
+    <select id="getTaskForPC" resultMap="BaseResultMap">
+        select * from  amazon_task_pc t where t.data_status=1 and t.completed_num &lt; t.run_num order by t.`level` desc,t.created_time limit 1
+    </select>
+    <update id="updatePCTaskById">
+        update amazon_task_pc set completed_num = if(((completed_num + 1) &gt; run_num),run_num,completed_num + 1) where id = #{id}
+    </update>
+    <insert id="insertPCTask">
+         INSERT INTO amazon_task_pc(args,asin,product_name, run_num, completed_num,url, `level`,created_time)
+        VALUES (
+          #{args},#{asin},#{productName},#{runNum},0,#{url},#{level},now()
+        )
+    </insert>
+    <select id="getPCTaskList" resultMap="BaseResultMap">
+        select
+          *
+        from
+          amazon_task_pc t
+        WHERE 1=1
+        <if test="asin != null and asin != ''">
+            and t.asin = #{asin}
+        </if>
+        <if test="dataStatus != null and dataStatus != ''">
+            and t.data_status = #{dataStatus}
+        </if>
+        order by t.`level` desc,t.created_time desc
+    </select>
 
 </mapper>

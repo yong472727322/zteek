@@ -23,6 +23,27 @@ public class AmazonTask {
     private Date calendarDate;
     private Integer total;
 
+
+    //PC端任务参数
+    private Integer completedNum;
+    private String url;
+
+    public Integer getCompletedNum() {
+        return completedNum;
+    }
+
+    public void setCompletedNum(Integer completedNum) {
+        this.completedNum = completedNum;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     public Integer getDataStatus() {
         return dataStatus;
     }

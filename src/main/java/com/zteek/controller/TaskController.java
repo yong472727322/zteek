@@ -1,6 +1,7 @@
 package com.zteek.controller;
 
 import com.zteek.entity.Account;
+import com.zteek.entity.AmazonTask;
 import com.zteek.entity.AmazonTaskRun;
 import com.zteek.service.AccountService;
 import com.zteek.service.TaskService;
@@ -212,5 +213,28 @@ public class TaskController {
         return null;
     }
 
+
+
+    /**
+     * PC端获取任务
+     * @return object为空表示没有任务
+     */
+    @RequestMapping("getTaskForPC")
+    public ReturnResult getTaskForPC(){
+        ReturnResult rr = new ReturnResult();
+        try{
+            AmazonTask atr = taskService.getTaskForPC();
+            if(null != atr){
+                rr.setObject(atr);
+            }else {
+                rr.setCode("9999");
+                rr.setMessage("fail");
+            }
+        }catch (Exception e){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
 
 }
