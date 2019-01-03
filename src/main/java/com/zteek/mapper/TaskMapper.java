@@ -1,16 +1,19 @@
 package com.zteek.mapper;
 
+import com.zteek.entity.Account;
 import com.zteek.entity.AmazonTask;
 import com.zteek.entity.AmazonTaskRun;
+import com.zteek.entity.Cookies;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 public interface TaskMapper {
 
-    public List<AmazonTask> getTasks(@Param("maxTaskNum") Integer maxTaskNum);
+    public List<AmazonTask> getTasks(@Param("maxTaskNum") Integer maxTaskNum,@Param("country")String country);
 
     public int updateTaskById(@Param("id") Long id);
 
@@ -64,13 +67,7 @@ public interface TaskMapper {
      *      按照  任务级别 降序 ， 创建时间 升序
      * @return
      */
-    AmazonTask getTaskForPC();
-    /**
-     * 更新PC端任务
-     * @param id
-     * @return
-     */
-    int updatePCTaskById(Long id);
+    AmazonTask getTaskForPC(String Country);
     /**
      * 添加PC端任务
      * @param task
@@ -83,4 +80,24 @@ public interface TaskMapper {
      * @return
      */
     List<AmazonTaskRun> getPCTaskList(Map<String, Object> param);
+    //删除任务
+    void deleteTask(Long id);
+    //修改执行次数
+    void updateCount(@Param("taskId") Long taskId);
+
+    AmazonTaskRun findTaskForId(Long id);
+
+    void updateTask(@Param("task") AmazonTaskRun task, @Param("id") Long id);
+
+    List<AmazonTask> selectCountry();
+
+    AmazonTask selectCountryById(Long id);
+
+    AmazonTask getTaskForPCByName(@Param("taskName")String taskName,@Param("Country") String Country);
+
+    List<Cookies> getCookies();
+
+    void updateCookieNextTime(@Param("id") Long id, @Param("date") Date date);
+
+    void updateSginCount(@Param("taskId") Long taskId);
 }

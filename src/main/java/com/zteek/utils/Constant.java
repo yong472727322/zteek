@@ -45,11 +45,61 @@ public class Constant {
      */
     public static Map<String,Boolean> vps_state = new HashMap<>();
 
+
+
     /**
-     * 存放 同时执行的任务
+     * 存放 同时执行US的任务
      *  格式：<任务详情>
      */
-    public static List<AmazonTask> tasks = new ArrayList<>(16);
+    public static List<AmazonTask> usTasks = new ArrayList<>(16);
+
+    /**
+     * 存放 同时执行的JP任务
+     *  格式：<任务详情>
+     */
+    public static List<AmazonTask> jpTasks = new ArrayList<>(16);
+
+    /**
+     * 存放 同时执行的UK任务
+     *  格式：<任务详情>
+     */
+    public static List<AmazonTask> ukTasks = new ArrayList<>(16);
+
+    /**
+     * 存放 同时执行的FR任务
+     *  格式：<任务详情>
+     */
+    public static List<AmazonTask> frTasks = new ArrayList<>(16);
+
+    /**
+     * 存放 同时执行的IT任务
+     *  格式：<任务详情>
+     */
+    public static List<AmazonTask> itTasks = new ArrayList<>(16);
+
+    /**
+     * 存放 同时执行的ES任务
+     *  格式：<任务详情>
+     */
+    public static List<AmazonTask> esTasks = new ArrayList<>(16);
+
+    /**
+     * 存放 同时执行的CA任务
+     *  格式：<任务详情>
+     */
+    public static List<AmazonTask> caTasks = new ArrayList<>(16);
+
+    /**
+     * 存放 同时执行的DE任务
+     *  格式：<任务详情>
+     */
+    public static List<AmazonTask> deTasks = new ArrayList<>(16);
+
+    /**
+     * 存放 各个国家的取账号次数 country[0]=US,country[1]=JP
+     *  格式：<任务详情>
+     */
+    public static Long[] country = new Long[2];
 
     /**
      * 同时最大执行任务数

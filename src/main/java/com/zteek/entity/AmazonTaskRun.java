@@ -13,16 +13,61 @@ public class AmazonTaskRun {
     private Date createdTime;
     private Date endTime;
     private String consuming;
+    private Integer taskNums;
 
 
     //PC端任务参数
     private String asin;
     private String productName;
     private Integer runNum;
-    private Integer completedNum;
+    private Integer count;
     private String url;
     private Integer level;
+    private Date updateTime;
+    private Integer doPage;
+    private String country;
+    private String taskName;
 
+    public Integer getSginCount() {
+        return sginCount;
+    }
+
+    public void setSginCount(Integer sginCount) {
+        this.sginCount = sginCount;
+    }
+
+    private Integer sginCount;
+
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+
+    public Integer getDoPage() {
+        return doPage;
+    }
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public void setDoPage(Integer doPage) {
+        this.doPage = doPage;
+    }
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
     public String getAsin() {
         return asin;
     }
@@ -45,14 +90,6 @@ public class AmazonTaskRun {
 
     public void setRunNum(Integer runNum) {
         this.runNum = runNum;
-    }
-
-    public Integer getCompletedNum() {
-        return completedNum;
-    }
-
-    public void setCompletedNum(Integer completedNum) {
-        this.completedNum = completedNum;
     }
 
     public String getUrl() {
@@ -142,4 +179,19 @@ public class AmazonTaskRun {
     public void setConsuming(String consuming) {
         this.consuming = consuming;
     }
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
+    }
+    public Integer getTaskNums() {
+        return taskNums;
+    }
+
+    public void setTaskNums(Integer taskNums) {
+        this.taskNums = taskNums;
+    }
+
 }

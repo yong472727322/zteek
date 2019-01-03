@@ -40,32 +40,33 @@ public class AmazonController {
 
     /**
      * 获取代理
+     *
      * @param token
      * @param timestamp
      * @param request
      * @return
      */
     @RequestMapping("proxy")
-    public ReturnResult proxy(String token, Long timestamp, String imei,HttpServletRequest request){
+    public ReturnResult proxy(String token, Long timestamp, String imei, HttpServletRequest request) {
         long startTime = System.currentTimeMillis();
         ReturnResult rr = new ReturnResult();
         String proxyIp = null;
-        try{
+        try {
             String ip = IPUtil.getIp(request);
-            logger.info("手机[{}],ip[{}]请求代理地址",imei,ip);
-            if(null == token || "".equals(token)){
+            logger.info("手机[{}],ip[{}]请求代理地址", imei, ip);
+            if (null == token || "".equals(token)) {
                 rr.setCode("9999");
                 rr.setMessage("fail");
                 rr.setObject("token不能为空");
                 return rr;
             }
-            if(null == timestamp || "".equals(timestamp)){
+            if (null == timestamp || "".equals(timestamp)) {
                 rr.setCode("9999");
                 rr.setMessage("fail");
                 rr.setObject("timestamp不能为空");
                 return rr;
             }
-            if(null == imei || "".equals(imei)){
+            if (null == imei || "".equals(imei)) {
                 rr.setCode("9999");
                 rr.setMessage("fail");
                 rr.setObject("IMEI不能为空");
@@ -74,7 +75,7 @@ public class AmazonController {
             //如果请求时间大于60分钟，返回失败
             long currentTimeMillis = System.currentTimeMillis();
             long l = currentTimeMillis - timestamp;
-            if(l > (1000*60*60)){
+            if (l > (1000 * 60 * 60)) {
                 rr.setCode("9999");
                 rr.setMessage("fail");
                 rr.setObject("请求时间大于60分钟");
@@ -82,14 +83,14 @@ public class AmazonController {
             }
 
             String s = MD5.MD5(String.valueOf(timestamp));
-            if(s.toUpperCase().equals(token.toUpperCase())){
+            if (s.toUpperCase().equals(token.toUpperCase())) {
                 IpPool ipPool = ipPoolService.getNewIpByImei(imei);
-                if(null == ipPool){
+                if (null == ipPool) {
                     rr.setCode("9999");
                     rr.setMessage("fail");
                     rr.setObject("IP使用次数达到，切换。");
                     return null;
-                }else {
+                } else {
                     ProxyMessage pm = new ProxyMessage();
                     pm.setAddr(ipPool.getIp());
                     pm.setPort(ipPool.getPort());
@@ -98,51 +99,51 @@ public class AmazonController {
                     rr.setObject(pm);
                     proxyIp = pm.getAddr();
                 }
-            }else {
+            } else {
                 rr.setCode("9999");
                 rr.setMessage("fail");
                 rr.setObject("token验证失败不能为空");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        Constant.phone_ip_task.put(imei,Constant.ipPhoneMaxTaskNum);
-
+        Constant.phone_ip_task.put(imei, Constant.ipPhoneMaxTaskNum);
         long endTime = System.currentTimeMillis();
-        logger.info("手机[{}]获取到的代理IP是[{}]，耗时[{}]毫秒",imei,proxyIp,(endTime-startTime));
+        logger.info("手机[{}]获取到的代理IP是[{}]，耗时[{}]毫秒", imei, proxyIp, (endTime - startTime));
         return rr;
     }
 
     /**
      * 发送换IP请求
+     *
      * @param token
      * @param timestamp
      * @param request
      * @return
      */
     @RequestMapping("changeIP")
-    public ReturnResult changeIP(String token, Long timestamp, String imei,String proxy,HttpServletRequest request){
+    public ReturnResult changeIP(String token, Long timestamp, String imei, String proxy, HttpServletRequest request) {
         ReturnResult rr = new ReturnResult();
-        try{
+        try {
             String ip = IPUtil.getIp(request);
-            logger.info("手机[{}],ip[{}]请求IP[{}]切换网络",imei,ip,proxy);
-            if(null == token || "".equals(token)){
+            logger.info("手机[{}],ip[{}]请求IP[{}]切换网络", imei, ip, proxy);
+            if (null == token || "".equals(token)) {
                 rr.setCode("9999");
                 rr.setMessage("fail");
                 return rr;
             }
-            if(null == timestamp || "".equals(timestamp)){
+            if (null == timestamp || "".equals(timestamp)) {
                 rr.setCode("9999");
                 rr.setMessage("fail");
                 return rr;
             }
-            if(StringUtils.isEmpty(proxy)){
+            if (StringUtils.isEmpty(proxy)) {
                 rr.setCode("9999");
                 rr.setMessage("代理IP必须");
                 return rr;
             }
-            if(null == imei || "".equals(imei)){
+            if (null == imei || "".equals(imei)) {
                 rr.setCode("9999");
                 rr.setMessage("fail");
                 return rr;
@@ -150,22 +151,22 @@ public class AmazonController {
             //如果请求时间大于60分钟，返回失败
             long currentTimeMillis = System.currentTimeMillis();
             long l = currentTimeMillis - timestamp;
-            if(l > (1000*60*60)){
+            if (l > (1000 * 60 * 60)) {
                 rr.setCode("9999");
                 rr.setMessage("fail");
                 return rr;
             }
 
             String s = MD5.MD5(String.valueOf(timestamp));
-            if(s.toUpperCase().equals(token.toUpperCase())){
-                boolean b = ipUtil.changIp(true,imei,proxy);
+            if (s.toUpperCase().equals(token.toUpperCase())) {
+                boolean b = ipUtil.changIp(true, imei, proxy);
                 rr.setObject(b);
-            }else {
+            } else {
                 rr.setCode("9999");
                 rr.setMessage("fail");
             }
-        }catch (Exception e){
-            logger.error("发送换IP请求出错，原因：[{}]",e);
+        } catch (Exception e) {
+            logger.error("发送换IP请求出错，原因：[{}]", e);
         }
         return rr;
     }
@@ -174,29 +175,31 @@ public class AmazonController {
      * 记录VPS的状态
      */
     @RequestMapping("recordVpsState")
-    public boolean recordVpsState(String vps,boolean state){
-        try{
-            Constant.vps_state.put(vps,state);
+    public boolean recordVpsState(String vps, boolean state) {
+        try {
+            Constant.vps_state.put(vps, state);
             return true;
-        }catch (Exception e){
-            logger.error("记录VPS[{}]的状态[{}]失败。原因：[{}]",vps,state,e.getMessage());
+        } catch (Exception e) {
+            logger.error("记录VPS[{}]的状态[{}]失败。原因：[{}]", vps, state, e.getMessage());
             return false;
         }
     }
+
     /**
      * 保存IP
+     *
      * @return
      */
     @RequestMapping("saveIP")
-    public boolean saveIP(IpPool ipPool){
+    public boolean saveIP(IpPool ipPool) {
         int i = ipPoolService.insertIP(ipPool);
         String vps = ipPool.getVps();
-        logger.info("VPS[{}]发送保存IP[{}]请求,保存结果[{}],ID[{}]", vps,ipPool.getIp(),i,ipPool.getId());
-        if(1 == i){
+        logger.info("VPS[{}]发送保存IP[{}]请求,保存结果[{}],ID[{}]", vps, ipPool.getIp(), i, ipPool.getId());
+        if (1 == i) {
             //VPS更换IP成功，修改状态
             changeIpSucess(vps, ipPool);
             return true;
-        }else {
+        } else {
             //再次请求VPS更换IP
             ipUtil.changVpsIp(ipPool.getIp());
         }
@@ -205,14 +208,15 @@ public class AmazonController {
 
     /**
      * 记录VPS当前IP
+     *
      * @return
      */
     @RequestMapping("recordIP")
-    public boolean recordIP(String ip,String vps){
-        logger.info("记录vps[{}]发送过来的ip[{}]",vps,ip);
+    public boolean recordIP(String ip, String vps) {
+        logger.info("记录vps[{}]发送过来的ip[{}]", vps, ip);
         //查询出数据库中最新的IP
         IpPool ipPool = ipPoolService.getNewIpByVps(vps);
-        if(null == ipPool){
+        if (null == ipPool) {
             ipPool = new IpPool();
             ipPool.setVps(vps);
             ipPool.setIp(ip);
@@ -220,27 +224,27 @@ public class AmazonController {
             ipPool.setPort(4431);
             ipPool.setPassword("password");
             int i = ipPoolService.insertIP(ipPool);
-            logger.info("VPS[{}]是新加入的，直接插入数据库，结果[{}]",vps,i);
-            if( 1 == i){
-                changeIpSucess(vps,ipPool);
+            logger.info("VPS[{}]是新加入的，直接插入数据库，结果[{}]", vps, i);
+            if (1 == i) {
+                changeIpSucess(vps, ipPool);
                 return true;
             }
             return false;
         }
         String dbIP = ipPool.getIp();
-        logger.info("VPS[{}]在数据库中最新的IP是[{}]",vps,dbIP);
+        logger.info("VPS[{}]在数据库中最新的IP是[{}]", vps, dbIP);
         //比较是否相同
         if (!dbIP.equals(ip)) {
             //不相同，插入数据库
             ipPool.setIp(ip);
             ipPool.setVps(vps);
             int i = ipPoolService.insertIP(ipPool);
-            logger.info("VPS[{}]数据库最新IP[{}]和发送过来的IP[{}]不一致，更新数据库。结果[{}]",vps,dbIP,ip,i);
-            if(0 == i){
+            logger.info("VPS[{}]数据库最新IP[{}]和发送过来的IP[{}]不一致，更新数据库。结果[{}]", vps, dbIP, ip, i);
+            if (0 == i) {
                 //此IP重复，发送切换IP请求到VPS
-                logger.warn("此IP[{}]重复，发送切换IP请求到VPS[{}]",ip,vps);
+                logger.warn("此IP[{}]重复，发送切换IP请求到VPS[{}]", ip, vps);
                 ipUtil.changVpsIp(ip);
-            }else if(1 == i){
+            } else if (1 == i) {
                 changeIpSucess(vps, ipPool);
                 return true;
             }
@@ -250,14 +254,15 @@ public class AmazonController {
 
     /**
      * 记录手机日志
+     *
      * @return
      */
     @RequestMapping("recordLog")
-    public void recordLog(PhoneLog log){
-        if(!StringUtils.isEmpty(log.getImei()) && !StringUtils.isEmpty(log.getMessage())){
-            if(!StringUtils.isEmpty(log.getLevel()) && "error".equalsIgnoreCase(log.getLevel())){
+    public void recordLog(PhoneLog log) {
+        if (!StringUtils.isEmpty(log.getImei()) && !StringUtils.isEmpty(log.getMessage())) {
+            if (!StringUtils.isEmpty(log.getLevel()) && "error".equalsIgnoreCase(log.getLevel())) {
                 //只有错误日志，才打印出来。
-                logger.error("记录手机[{}]发送过来的错误日志[{}]",log.getImei(),log.getMessage());
+                logger.error("记录手机[{}]发送过来的错误日志[{}]", log.getImei(), log.getMessage());
             }
             phoneService.recordLog(log);
         }
@@ -265,14 +270,15 @@ public class AmazonController {
 
     /**
      * VPS修改IP成功之后所需的步骤
+     *
      * @param vps
      * @param ipPool
      */
     private void changeIpSucess(String vps, IpPool ipPool) {
         //VPS更换IP成功，修改状态
-        Constant.vps_state.put(vps,false);
+        Constant.vps_state.put(vps, false);
         //设置新IP的时间
-        Constant.vps_new_ip.put(vps,new Date());
+        Constant.vps_new_ip.put(vps, new Date());
 
         //获取VPS前一个IP
         String preIp = Constant.vps.get(vps);
@@ -281,16 +287,16 @@ public class AmazonController {
         Constant.use.remove(preIp);
 
         //将VPS的当前IP 写入内存
-        Constant.vps.put(vps,ipPool.getIp());
-        Constant.vps_detail.put(vps,ipPool);
+        Constant.vps.put(vps, ipPool.getIp());
+        Constant.vps_detail.put(vps, ipPool);
 
         //如果是新加入的，服务器一开始没有加载到
-        if(!Constant.vps_change.containsKey(vps)){
-            Constant.vps_change.put(vps,Constant.changCount);
+        if (!Constant.vps_change.containsKey(vps)) {
+            Constant.vps_change.put(vps, Constant.changCount);
         }
 
         //清除IP使用记录
-        if(!Constant.ip_phone_max.isEmpty()) {
+        if (!Constant.ip_phone_max.isEmpty()) {
             Constant.ip_phone_max.remove(ipPool.getIp());
         }
     }
@@ -298,39 +304,42 @@ public class AmazonController {
 
     /**
      * 修改更换计数器
+     *
      * @return
      */
     @RequestMapping("setChangCount")
-    public Object setChangCount(int cc,String vps){
+    public Object setChangCount(int cc, String vps) {
         //如果 没有传 VPS 说明 修改 全部
-        if(StringUtils.isEmpty(vps)){
-            for(Map.Entry<String,Integer> map : Constant.vps_change.entrySet()){
-                logger.info("1修改VPS[{}]最大使用次数[{}]",map.getKey(),cc);
+        if (StringUtils.isEmpty(vps)) {
+            for (Map.Entry<String, Integer> map : Constant.vps_change.entrySet()) {
+                logger.info("1修改VPS[{}]最大使用次数[{}]", map.getKey(), cc);
                 map.setValue(cc);
             }
-        }else {
-            logger.info("2修改VPS[{}]最大使用次数[{}]",vps,cc);
-            Constant.vps_change.put(vps,cc);
+        } else {
+            logger.info("2修改VPS[{}]最大使用次数[{}]", vps, cc);
+            Constant.vps_change.put(vps, cc);
         }
-       return Constant.vps_change;
+        return Constant.vps_change;
     }
 
     /**
      * 手动 清除超时任务
+     *
      * @return
      */
     @RequestMapping("clearUse")
-    public void clearUse(){
+    public void clearUse() {
         logger.warn("手动 清除超时任务");
         clearUseTask.clearUse();
     }
 
     /**
      * 手动 检测VPS的状态
+     *
      * @return
      */
     @RequestMapping("changeVpsIp")
-    public void changeVpsIp(){
+    public void changeVpsIp() {
         logger.warn("手动 检测VPS的状态");
         clearUseTask.changeVpsIp();
     }
@@ -340,13 +349,21 @@ public class AmazonController {
      * 修改同时执行的任务个数
      */
     @RequestMapping("changeMaxTaskNum")
-    public Object changeMaxTaskNum(int max){
+    public Object changeMaxTaskNum(int max) {
+        String country = null;
+        List<AmazonTask> taskList = taskService.selectCountry();
+        if (taskList.size() > 1) {
+            int random = (int) (Math.random() * taskList.size());
+            country = taskList.get(random).getCountry();
+        } else {
+            country = taskList.get(0).getCountry();
+        }
         //清空 内存中的任务
-        Constant.tasks.clear();
+        TaskMapManager.getInstance().getTask(country).clear();
         //重新 从数据库中查询
-        List<AmazonTask> tasks = taskService.getTasks(max);
-        for(AmazonTask task : tasks){
-            Constant.tasks.add(task);
+        List<AmazonTask> tasks = taskService.getTasks(Constant.max_task_num, country);
+        for (AmazonTask task : tasks) {
+            TaskMapManager.getInstance().getTask(country).add(task);
         }
         Constant.max_task_num = max;
         return tasks;
@@ -356,25 +373,26 @@ public class AmazonController {
      * 获取VPS的IP
      */
     @RequestMapping("getVpsIp")
-    public String getVpsIp(String vps){
+    public String getVpsIp(String vps) {
         String vpsIp = Constant.vps.get(vps);
         Boolean vpsState = Constant.vps_state.get(vps);
         Date date = Constant.vps_new_ip.get(vps);
-        date = date == null ? new Date(2018,10,10) : date;
-        return vpsIp+"--"+vpsState+"--"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)+"--"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        date = date == null ? new Date(2018, 10, 10) : date;
+        return vpsIp + "--" + vpsState + "--" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date) + "--" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
     }
 
 
     /**
      * 根据不同参数，获取对应的变量
+     *
      * @param str
      * @return
      */
     @RequestMapping("getCurrentCount/{str}")
-    public Object getCommon(@PathVariable("str") String str){
+    public Object getCommon(@PathVariable("str") String str) {
         Object obj;
-        switch (str){
-            case "use" :
+        switch (str) {
+            case "use":
                 obj = Constant.use;
                 break;
             case "task_counter":
@@ -383,8 +401,29 @@ public class AmazonController {
             case "max_task_num":
                 obj = Constant.max_task_num;
                 break;
-            case "tasks":
-                obj = Constant.tasks;
+            case "usTasks":
+                obj = Constant.usTasks;
+                break;
+            case "jpTasks":
+                obj = Constant.jpTasks;
+                break;
+            case "esTasks":
+                obj = Constant.esTasks;
+                break;
+            case "itTasks":
+                obj = Constant.itTasks;
+                break;
+            case "frTasks":
+                obj = Constant.frTasks;
+                break;
+            case "deTasks":
+                obj = Constant.deTasks;
+                break;
+            case "caTasks":
+                obj = Constant.caTasks;
+                break;
+            case "ukTasks":
+                obj = Constant.ukTasks;
                 break;
             case "vps_state":
                 obj = Constant.vps_state;
@@ -406,7 +445,6 @@ public class AmazonController {
         }
         return obj;
     }
-
 
 
 }

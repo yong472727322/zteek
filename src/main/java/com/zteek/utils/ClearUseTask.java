@@ -1,6 +1,8 @@
 package com.zteek.utils;
 
 import com.zteek.entity.IpPool;
+import com.zteek.mapper.TaskMapper;
+import com.zteek.mapper.VmCountMapper;
 import com.zteek.service.IpPoolService;
 import com.zteek.service.PhoneService;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +29,10 @@ public class ClearUseTask {
     private IpPoolService ipPoolService;
     @Autowired
     private PhoneService phoneService;
+    @Autowired
+    private TaskMapper taskMapper;
+    @Autowired
+    private VmCountMapper vmCountMapper;
 
     //30分钟
     private int thirtyMin = 30 * 60 * 1000;
@@ -216,4 +222,12 @@ public class ClearUseTask {
         log.error("定时任务，结束每20分钟 检测一次VPS，使用次数达到目标次数，并且都标记为null。。");
     }
 
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void clearNull() {
+        //每天晚上零点清空执行次数
+        log.error("====================================定时任务，每天晚上零点清空已执行次数=================================");
+        vmCountMapper.updateBeforeCount();
+        vmCountMapper.updateCountToNull();
+    }
 }

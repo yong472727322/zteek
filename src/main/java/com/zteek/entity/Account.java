@@ -13,6 +13,8 @@ public class Account {
     private Date updateTime;
     private String imei;
     private Integer registResult;
+    private String country;
+    private Integer countryStatus;
 
     public Long getId() {
         return id;
@@ -85,4 +87,20 @@ public class Account {
     public void setRegistResult(Integer registResult) {
         this.registResult = registResult;
     }
+
+    public String getCountry() {
+        return country;
+    }
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public Integer getCountryStatus() {
+        return countryStatus;
+    }
+
+    public void setCountryStatus(Integer countryStatus) {
+        this.countryStatus = countryStatus;
+    }
+
 }

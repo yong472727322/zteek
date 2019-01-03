@@ -1,9 +1,12 @@
 package com.zteek.service;
 
+import com.zteek.entity.Account;
 import com.zteek.entity.AmazonTask;
 import com.zteek.entity.AmazonTaskRun;
+import com.zteek.entity.Cookies;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +17,7 @@ public interface TaskService {
      * @param ip
      * @return
      */
-    AmazonTaskRun getTask(String imei, String ip);
+    AmazonTaskRun getTask(String imei, String ip,String country);
 
     int endTask(AmazonTaskRun atr);
 
@@ -45,7 +48,7 @@ public interface TaskService {
      * @param maxTaskNum
      * @return
      */
-    List<AmazonTask> getTasks(Integer maxTaskNum);
+    List<AmazonTask> getTasks(Integer maxTaskNum,String country);
 
     /**
      * 根据ASIN查找任务
@@ -91,7 +94,7 @@ public interface TaskService {
      * PC端获取任务
      * @return
      */
-    AmazonTask getTaskForPC();
+    AmazonTask getTaskForPC(String Country);
     /**
      * 添加PC端任务
      * @param task
@@ -104,4 +107,24 @@ public interface TaskService {
      * @return
      */
     List<AmazonTaskRun> getPCTaskList(Map<String,Object> param);
+
+    void deleteTask(Long id);
+
+    void updateCount(Long taskId);
+
+    AmazonTaskRun findtaskForId(Long id);
+
+    void updateTask(AmazonTaskRun task, Long id);
+
+    List<AmazonTask> selectCountry();
+
+    AmazonTask selectCountryById(Long id);
+
+    AmazonTask getTaskForPCByName(String taskName,String Country);
+
+    List<Cookies> getCookies();
+
+    void updateCookieNextTime(Long id,Date date);
+
+    void updateSginCount(Long taskId);
 }

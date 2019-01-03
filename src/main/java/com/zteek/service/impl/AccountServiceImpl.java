@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class AccountServiceImpl implements AccountService {
 
@@ -16,12 +19,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Account getAccount(String imei) {
+    public synchronized Account getAccount(String imei,String country) {
         //取一个账号
-        Account account = accountMapper.getAccountByImei();
+        Account account = accountMapper.getAccountByImei(country);
         if(null == account.getId()){
             //没有取到，再获取一次
-            account = accountMapper.getAccountByImei();
+            account = accountMapper.getAccountByImei(country);
         }
         //记录使用手机，更新账号状态
         accountMapper.updateImeiById(account.getId(),imei);
@@ -34,6 +37,31 @@ public class AccountServiceImpl implements AccountService {
     public int registResult(Account account) {
         accountMapper.updateResultById(account);
         return 1;
+    }
+
+    @Override
+    public List<Account> getCountList(Map<String, Object> param) {
+        return accountMapper.getCountList(param);
+    }
+
+    @Override
+    public void openUS() {
+        accountMapper.openUS();
+    }
+
+    @Override
+    public void closeUS() {
+        accountMapper.closeUS();
+    }
+
+    @Override
+    public void openJP() {
+        accountMapper.openJP();
+    }
+
+    @Override
+    public void closeJP() {
+        accountMapper.closeJP();
     }
 
 

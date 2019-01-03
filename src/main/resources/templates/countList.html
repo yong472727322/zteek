@@ -1,0 +1,163 @@
+﻿<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+	<div th:replace="_meta :: meta"></div>
+	<div th:replace="_meta :: script"></div>
+	<div th:replace="_meta :: link"></div>
+
+	<title>移动端账户管理 - 后台管理系统 v1.0</title>
+	<meta name="keywords" content="H-ui.admin v3.0,H-ui网站后台模版,后台模版下载,后台管理系统模版,HTML后台模版下载">
+	<meta name="description" content="H-ui.admin v3.0，是一款由国人开发的轻量级扁平化网站后台模板，完全免费开源的网站后台管理系统模版，适合中小型CMS后台系统。">
+</head>
+<body>
+	<div th:replace="_header :: header"></div>
+
+	<div th:replace="_menu :: aside"></div>
+
+	<section class="Hui-article-box">
+		<nav class="breadcrumb"><i class="Hui-iconfont"></i> <a href="/" class="maincolor">首页</a>
+			<span class="c-999 en">&gt;</span>
+			<span class="c-666">移动端账户管理</span>
+			<a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+		<div class="Hui-article">
+			<article class="cl pd-20">
+
+				<div class="cl pd-5 bg-1 bk-gray mt-20"> <span class="l">
+					<span>
+						<a href="/admin/openUS"class="btn btn-primary radius">
+							<i class="Hui-iconfont">开启US</i>
+						</a>
+					</span>
+					<span>
+						<a href="/admin/closeUS"class="btn btn-primary radius">
+							<i class="Hui-iconfont">关闭US</i>
+						</a>
+					</span>
+					<span>
+						<a href="/admin/openJP"class="btn btn-primary radius">
+							<i class="Hui-iconfont">开启JP</i>
+						</a>
+					</span>
+					<span>
+						<a href="/admin/closeJP"class="btn btn-primary radius">
+							<i class="Hui-iconfont">关闭JP</i>
+						</a>
+					</span>
+				</div>
+
+				<div class="mt-20">
+					<table id="table_id_example" class="table table-border table-bordered table-hover table-bg table-sort">
+						<thead>
+							<tr class="text-c">
+								<th width="100">账户名称</th>
+								<th width="140">账户邮箱</th>
+								<th width="200">账户密码</th>
+								<th width="80">账户状态</th>
+								<th width="80">imei</th>
+								<th width="80">注册结果</th>
+								<th width="80">创建时间</th>
+								<th width="80">对应国家</th>
+								<th width="80">是否开启</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</article>
+
+			<div th:replace="_footer :: footer"></div>
+		</div>
+	</section>
+
+	<div th:replace="_footer :: script"></div>
+	<script type="text/javascript" src="/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript">
+
+	$(function(){
+
+        $('#table_id_example').DataTable({
+            // draw: 1,//标识可以避免因ajax的异步性而导致展示错误数据
+            // recordsFiltered: 10,//过滤后数据总条数
+            // recordsTotal: 10,//过滤前数据总条数
+//            scrollY: 300,//滚动条高度
+            paging: true,//是否支持分页
+            serverSide: true,//是否支持服务器处理
+            // 'bStateSave': true,// 状态保存
+            // 'processing': true, // 打开数据加载时的等待效果
+			'lengthMenu':[100],
+            'sAjaxSource': '/admin/countData',
+            'fnServerData': function (sSource,aoData,fnCallback,oSettings) {
+                oSettings.jqXHR = $.ajax({
+                    'dataType': 'json',
+                    'type': 'GET',
+                    'url': sSource,
+                    'data': aoData,
+                    'success': function (data) {
+                        fnCallback(data);
+                    },
+                    'error': function (e) {
+                        console.log(e.message);
+                    }
+                });
+            },
+            columns: [
+                { data: 'username',"orderable": false  },
+                { data: 'email',"orderable": false  },
+                { data: 'password' ,"orderable": false },
+                { data: 'status',"orderable": false,
+                    "render":function (data, type, full, meta) {
+                        if (data==0) {
+                            data = '<font style="color: green">可用</font>';
+                            return data;
+                        }else {
+                            data = '<font style="color: red">在用</font>';
+                            return data;
+                        }
+                    }
+				},
+                { data: 'imei',"orderable": false  },
+                { data: 'registResult',"orderable": false ,
+                    "render":function (data, type, full, meta) {
+                        if (data==0) {
+                            data = '<font style="color: red">注册失败</font>';
+                            return data;
+                        }else if (data==1) {
+                            data = '<font style="color: green">注册成功</font>';
+                            return data;
+                        }else {
+                            data = "暂未使用";
+                            return data;
+						}
+                    }
+				},
+                { data: 'createTime',"orderable": false  },
+                { data: 'country',"orderable": false  },
+                { data: 'countryStatus',"orderable": false ,
+                    "render":function (data, type, full, meta) {
+                        if (data==0) {
+                            data = '<font style="color: green">已开启</font>';
+                            return data;
+                        }else if (data==1) {
+                            data = '<font style="color: red">已关闭</font>';
+                            return data;
+                        }else {
+                            data = "暂未使用";
+                            return data;
+                        }
+                    }
+				}
+            ]
+        });
+
+
+	});
+
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+
+</body>
+</html>

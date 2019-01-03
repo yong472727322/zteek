@@ -1,11 +1,13 @@
 package com.zteek.controller;
 
-import com.zteek.entity.Account;
-import com.zteek.entity.AmazonTask;
-import com.zteek.entity.AmazonTaskRun;
+import com.alibaba.fastjson.JSON;
+import com.zteek.entity.*;
 import com.zteek.service.AccountService;
 import com.zteek.service.TaskService;
+import com.zteek.service.VmCountService;
+import com.zteek.utils.Constant;
 import com.zteek.utils.IPUtil;
+import com.zteek.utils.ReadingAllCookiesBySql;
 import com.zteek.utils.ReturnResult;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +28,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 任务
@@ -41,13 +48,15 @@ public class TaskController {
     private AccountService accountService;
     @Value("${apk.path}")
     private String apkPath;
+    @Autowired
+    private VmCountService vmCountService;
 
     /**
-     * 取账号
-     * @return object为空表示没有账号
+     * 取国家
+     * @return 对应的国家，如"US","JP"
      */
-    @RequestMapping("getAccount")
-    public ReturnResult getAccount(String imei){
+    @RequestMapping("getCountry")
+    public ReturnResult getCountry(String imei){
         ReturnResult rr = new ReturnResult();
         if(StringUtils.isEmpty(imei)){
             rr.setCode("9999");
@@ -55,9 +64,49 @@ public class TaskController {
             rr.setObject("imei不能为空");
             return rr;
         }
-        logger.info("手机[{}]获取账号",imei);
+        AmazonTask amazonTask = new AmazonTask();
+        String country = null;
+        try {
+            List<AmazonTask> taskList = taskService.selectCountry();
+            if (taskList.size() > 1) {
+                logger.info("手机[{}]获取国家", imei);
+                int random = (int) (Math.random() * taskList.size());
+                country = taskList.get(random).getCountry();
+                amazonTask.setCountry(country);
+                rr.setObject(amazonTask);
+            } else {
+                country = taskList.get(0).getCountry();
+                amazonTask.setCountry(country);
+                rr.setObject(amazonTask);
+            }
+        }catch (Exception e){
+            logger.info("手机[{}]获取国家出错，原因：[{}]",imei,e);
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
+
+
+
+    /**
+     * 取账号
+     * @return object为空表示没有账号
+     */
+    @RequestMapping("getAccount")
+    public ReturnResult getAccount(String imei,String country){
+        if (StringUtils.isEmpty(country)) {
+            country = "US";
+        }
+        ReturnResult rr = new ReturnResult();
+        if(StringUtils.isEmpty(imei)){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+            rr.setObject("imei不能为空");
+            return rr;
+        }
         try{
-            Account account = accountService.getAccount(imei);
+            Account account = accountService.getAccount(imei,country);
             rr.setObject(account);
         }catch (Exception e){
             logger.info("手机[{}]获取账号出错，原因：[{}]",imei,e);
@@ -109,7 +158,7 @@ public class TaskController {
      * @return object为空表示没有任务
      */
     @RequestMapping("getTask")
-    public ReturnResult getTask(HttpServletRequest request,String imei){
+    public ReturnResult getTask(HttpServletRequest request,String imei,String country){
         String ip = IPUtil.getIp(request);
         ReturnResult rr = new ReturnResult();
         if(StringUtils.isEmpty(imei)){
@@ -119,8 +168,8 @@ public class TaskController {
             return rr;
         }
         try{
-            logger.info("手机[{}]使用代理IP[{}]获取新任务",imei,ip);
-            AmazonTaskRun atr = taskService.getTask(imei,ip);
+            logger.info("手机[{}]使用代理IP[{}]获取[{}]新任务",imei,ip,country);
+            AmazonTaskRun atr = taskService.getTask(imei,ip,country);
             rr.setObject(atr);
         }catch (Exception e){
             logger.info("手机[{}]获取新任务出错，原因：[{}]",imei,e);
@@ -216,14 +265,14 @@ public class TaskController {
 
 
     /**
-     * PC端获取任务
+     * PC端随机获取任务
      * @return object为空表示没有任务
      */
     @RequestMapping("getTaskForPC")
-    public ReturnResult getTaskForPC(){
+    public ReturnResult getTaskForPC(String Country){
         ReturnResult rr = new ReturnResult();
         try{
-            AmazonTask atr = taskService.getTaskForPC();
+            AmazonTask atr = taskService.getTaskForPC(Country);
             if(null != atr){
                 rr.setObject(atr);
             }else {
@@ -236,5 +285,238 @@ public class TaskController {
         }
         return rr;
     }
+
+    /**
+     * PC端根据任务名称获取任务
+     * @return object为空表示没有任务
+     */
+    @RequestMapping("getTaskForPCByName")
+    public ReturnResult getTaskForPCByName(String nameAndCountry){
+        ReturnResult rr = new ReturnResult();
+        String[] nameCountry = nameAndCountry.split("@@@");
+        String taskName = nameCountry[0];
+        String Country = nameCountry[1];
+        try{
+            AmazonTask atr = taskService.getTaskForPCByName(taskName,Country);
+            if(null != atr){
+                rr.setObject(atr);
+            }else {
+                rr.setCode("9999");
+                rr.setMessage("fail");
+            }
+        }catch (Exception e){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
+
+    /**
+     * PC端随机获取1000个Cookie
+     * @return object为空表示没有Cookie
+     */
+    @RequestMapping("getCookies")
+    public ReturnResult getCookies(){
+        ReturnResult rr = new ReturnResult();
+        try{
+            List<Cookies> Cookies = taskService.getCookies();
+            if(null != Cookies){
+                rr.setObject(Cookies);
+                //将已取出的cookie设置下一次使用时间为三天后
+                //三天后的时间
+                Date date = new Date();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(date);
+                calendar.add(Calendar.DAY_OF_MONTH, +3);
+                date = calendar.getTime();
+                for (com.zteek.entity.Cookies cookie : Cookies) {
+                    taskService.updateCookieNextTime(cookie.getId(),date);
+                }
+            }else {
+                rr.setCode("9999");
+                rr.setMessage("fail");
+            }
+        }catch (Exception e){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
+
+    /**
+     * PC端获取指定虚拟机信息
+     * @return object为空表示没有信息
+     */
+    @RequestMapping("getCountryAndTaskName")
+    public ReturnResult getCountryAndTaskName(String userName){
+        ReturnResult rr = new ReturnResult();
+        try{
+            VmCount vmCount = vmCountService.getCountryAndTaskName(userName);
+            if(null != vmCount){
+                rr.setObject(vmCount);
+            }else {
+                rr.setCode("9999");
+                rr.setMessage("fail");
+            }
+        }catch (Exception e){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
+
+    /**
+     * PC端更改任务执行次数
+     * @return object为空表示没有任务
+     */
+    @RequestMapping("updateCount")
+    public ReturnResult updateCount(String countAndId){
+        ReturnResult rr = new ReturnResult();
+        try{
+            String[] countId = countAndId.split("@@@");
+            //执行次数
+            //Integer count=Integer.valueOf(countId[1]);
+            //任务id
+            Long taskId = Long.valueOf(countId[0]);
+            if(null != taskId){
+                //查询出数据库中当前的已执行次数
+                //AmazonTaskRun amazonTaskRun = taskService.findtaskForId(taskId);
+                //已执行次数加上此次已执行次数
+                //count=amazonTaskRun.getCount()+1;
+                taskService.updateCount(taskId);
+            }else {
+                rr.setCode("9999");
+                rr.setMessage("fail");
+            }
+        }catch (Exception e){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
+
+    /**
+     * PC端更改任务执行次数
+     * @return object为空表示没有任务
+     */
+    @RequestMapping("updateSginCount")
+    public ReturnResult updateSginCount(String sginCountAndId){
+        ReturnResult rr = new ReturnResult();
+        try{
+            String[] countId = sginCountAndId.split("@@@");
+            //任务id
+            Long taskId = Long.valueOf(countId[0]);
+            if(null != taskId){
+                taskService.updateSginCount(taskId);
+            }else {
+                rr.setCode("9999");
+                rr.setMessage("fail");
+            }
+        }catch (Exception e){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
+
+
+    /**
+     * PC端更改各虚拟机执行次数
+     * @return object为空表示没有任务
+     */
+    @RequestMapping("updateVmCount")
+    public ReturnResult updateVmCount(String vmCount){
+        ReturnResult rr = new ReturnResult();
+        try{
+            String[] vmCounts = vmCount.split("@@@");
+            //该虚拟机执行的asin
+            String asin = vmCounts[0];
+            //虚拟机名称
+            String userName = vmCounts[1];
+            if(null != userName){
+                vmCountService.updateVmCount(asin,userName);
+            }else {
+                rr.setCode("9999");
+                rr.setMessage("fail");
+            }
+        }catch (Exception e){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
+
+    /**
+     * PC端更改各虚拟机执行状态
+     * @return object为空表示没有任务
+     */
+    @RequestMapping("updateVmStatus")
+    public ReturnResult updateVmStatus(String vmCount){
+        ReturnResult rr = new ReturnResult();
+        try{
+            String[] vmCounts = vmCount.split("@@@");
+            //该虚拟机的状态
+            Integer vmStatus = Integer.valueOf(vmCounts[1]);
+            //虚拟机名称
+            String userName = vmCounts[0];
+            //异常信息
+            String message = vmCounts[2];
+            //虚拟机跑的关键字
+            String keyword = vmCounts[3];
+            if(null != userName){
+                vmCountService.updateVmStatus(vmStatus,userName,message,keyword);
+            }else {
+                rr.setCode("9999");
+                rr.setMessage("fail");
+            }
+        }catch (Exception e){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
+
+    /**
+     * PC端更改各虚拟机重启状态为已重启
+     * @return object为空表示没有任务
+     */
+    @RequestMapping("updateRestartStatus")
+    public ReturnResult updateRestartStatus(String userName){
+        ReturnResult rr = new ReturnResult();
+        try{
+            if(null != userName){
+                vmCountService.updateRestartStatus(userName);
+            }else {
+                rr.setCode("9999");
+                rr.setMessage("fail");
+            }
+        }catch (Exception e){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
+
+    /**
+     * PC端更改各虚拟机重启状态为已重启
+     * @return object为空表示没有任务
+     */
+    @RequestMapping("updateWarStatus")
+    public ReturnResult updateWarStatus(String userName){
+        ReturnResult rr = new ReturnResult();
+        try{
+            if(null != userName){
+                vmCountService.updateWarStatus(userName);
+            }else {
+                rr.setCode("9999");
+                rr.setMessage("fail");
+            }
+        }catch (Exception e){
+            rr.setCode("9999");
+            rr.setMessage("fail");
+        }
+        return rr;
+    }
+
 
 }

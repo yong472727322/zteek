@@ -1,17 +1,24 @@
 package com.zteek.service.impl;
 
 import com.sun.corba.se.impl.encoding.CDROutputStream_1_0;
+import com.zteek.entity.Account;
 import com.zteek.entity.AmazonTask;
 import com.zteek.entity.AmazonTaskRun;
+import com.zteek.entity.Cookies;
 import com.zteek.mapper.TaskMapper;
 import com.zteek.service.TaskService;
 import com.zteek.utils.Constant;
+import com.zteek.utils.TaskMapManager;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.Cookie;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -25,31 +32,68 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public synchronized AmazonTaskRun getTask(String imei, String proxyIp) {
+    public synchronized AmazonTaskRun getTask(String imei, String proxyIp,String country) {
+        if (!StringUtils.isNotEmpty(country)) {
+            country="US";
+        }
         //任务个数
-        if(Constant.tasks.isEmpty()){
+        if(TaskMapManager.getInstance().getTask(country).isEmpty()){
             //没有任务
             log.warn("没有任务。。。");
             return null;
         }
-        int size = Constant.tasks.size();
+
+        /*判断取到的三个任务中是否有相同的任务
+        if (Constant.tasks.size()>=2) {
+            int i=0;
+            while(i<3&&Constant.tasks.size()>=2) {
+                if (Constant.tasks.get(0) == Constant.tasks.get(1)) {
+                    //如果获取到的任务相同，从任务中移除第一个
+                    Constant.tasks.remove(Constant.tasks.get(0));
+                }
+                i++;
+            }
+        }
+        */
+        int size = TaskMapManager.getInstance().getTask(country).size();
         log.info("手机[{}]获取任务，当前内存任务个数[{}]",imei,size);
         int cc = 0;
+        int num = 0;
         //循环获取，防止获取到的任务已经执行完成，但是内存没有更新
         AmazonTask task = null;
         while(cc < size){
             int i = Constant.task_counter % size;
             //从内存中获取一个任务
-            task = Constant.tasks.get(i);
+            task = TaskMapManager.getInstance().getTask(country).get(i);
             log.info("第[{}]次从内存中获取第[{}]个任务，获取到任务[{}]",cc,i,task.getId());
             //计数器+1
             Constant.task_counter ++;
+            num ++;
+            //判断取到的任务与当前账号的国家是否吻合
+            if (num<=3) {
+                if (!task.getCountry().equals(country)) {
+                    continue;
+                }
+            }else {
+                log.warn("没有当前站点对应的任务。。。");
+                return null;
+            }
+            //if (task.getCountry().equals("JP")&&task.getRemaining()>0||task.getRunNum() > task.getRunCompleted()) {
+                //cc = size + 1;
+           // }
+            //如果只存在一个任务，则只执行一次
+            if(TaskMapManager.getInstance().getTask(country).size()==1) {
+                cc=size+1;
+            }
+            if (TaskMapManager.getInstance().getTask(country).size()==2) {
+                cc++;
+            }
 
             //判断任务是否已经完成了
             if(task.getRemaining() <= 0 || task.getRunNum() <= task.getRunCompleted()){
                 //任务已经完成，从内存中删除
                 log.info("任务[{}]已经完成，从内存中删除",task.getId());
-                Constant.tasks.remove(task);
+                TaskMapManager.getInstance().getTask(country).remove(task);
                 task = null;
                 cc ++;
             }else {
@@ -129,7 +173,7 @@ public class TaskServiceImpl implements TaskService {
 //
 //            Constant.ip_phone_max.put(proxyIp,list);
 //        }
-        log.error("手机[{}]使用IP[{}]获取到任务[{}]",imei,proxyIp,task.getId());
+        log.error("手机[{}]使用IP[{}]获取到[{}]任务[{}]",imei,proxyIp,country,task.getId());
 
 
         //修改任务执行数量的情况
@@ -149,6 +193,7 @@ public class TaskServiceImpl implements TaskService {
         if(Constant.task_counter > Constant.MAX_TASK_COUNTER){
             Constant.task_counter = 0;
         }
+        atr.setTaskNums(size);
         return atr;
     }
 
@@ -183,11 +228,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<AmazonTask> getTasks(Integer maxTaskNum) {
+    public List<AmazonTask> getTasks(Integer maxTaskNum,String country) {
         if(null == maxTaskNum || maxTaskNum < 1){
             maxTaskNum = Constant.max_task_num;
         }
-        return taskMapper.getTasks(maxTaskNum);
+        return taskMapper.getTasks(maxTaskNum,country);
     }
 
     @Override
@@ -224,17 +269,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AmazonTask getTaskForPC() {
+    public AmazonTask getTaskForPC(String Country) {
         try{
-            AmazonTask task = taskMapper.getTaskForPC();
+            AmazonTask task = taskMapper.getTaskForPC(Country);
             if(null == task){
                 return null;
             }
-            //更新任务
-            int i = taskMapper.updatePCTaskById(task.getId());
-            if(i > 0){
-                return task;
-            }
+            return task;
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -250,5 +291,66 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<AmazonTaskRun> getPCTaskList(Map<String, Object> param) {
         return taskMapper.getPCTaskList(param);
+    }
+
+    @Override
+    public void deleteTask(Long id) {
+        taskMapper.deleteTask(id);
+    }
+
+    @Override
+    public void updateCount(Long taskId) {
+        taskMapper.updateCount(taskId);
+    }
+
+    @Override
+    public AmazonTaskRun findtaskForId(Long id) {
+        return taskMapper.findTaskForId(id);
+    }
+
+    @Override
+    public void updateTask(AmazonTaskRun task, Long id) {
+        taskMapper.updateTask(task,id);
+    }
+
+    @Override
+    public List<AmazonTask> selectCountry() {
+        return taskMapper.selectCountry();
+    }
+
+    @Override
+    public AmazonTask selectCountryById(Long id) {
+        return taskMapper.selectCountryById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AmazonTask getTaskForPCByName(String taskName,String Country) {
+        try{
+            AmazonTask task = taskMapper.getTaskForPCByName(taskName,Country);
+            if(null == task){
+                return null;
+            }
+            return task;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public List<Cookies> getCookies() {
+        List<Cookies> Cookies = taskMapper.getCookies();
+        return Cookies;
+    }
+
+    @Override
+    public void updateCookieNextTime(Long id, Date date) {
+        taskMapper.updateCookieNextTime(id,date);
+    }
+
+    @Override
+    public void updateSginCount(Long taskId) {
+        taskMapper.updateSginCount(taskId);
     }
 }

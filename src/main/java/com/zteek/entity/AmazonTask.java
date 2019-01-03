@@ -6,12 +6,13 @@ public class AmazonTask {
     private Long id;
     private String args;
     private Integer level;
-    private String site;
+    //private String site;
     private Integer runNum;
     private Integer runingNum;
     private Integer runCompleted;
     private Integer remaining;
     private Integer dataStatus;
+    private String country;
     private String createdBy;
     private Date createdDate;
 
@@ -25,15 +26,49 @@ public class AmazonTask {
 
 
     //PC端任务参数
-    private Integer completedNum;
     private String url;
+    private Integer count;
+    private Date updateTime;
+    private Integer doPage;
+    private String taskName;
 
-    public Integer getCompletedNum() {
-        return completedNum;
+    public Integer getSginCount() {
+        return sginCount;
     }
 
-    public void setCompletedNum(Integer completedNum) {
-        this.completedNum = completedNum;
+    public void setSginCount(Integer sginCount) {
+        this.sginCount = sginCount;
+    }
+
+    private Integer sginCount;
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
+    public Integer getDoPage() {
+        return doPage;
+    }
+
+    public void setDoPage(Integer doPage) {
+        this.doPage = doPage;
+    }
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
     }
 
     public String getUrl() {
@@ -132,14 +167,6 @@ public class AmazonTask {
         this.level = level;
     }
 
-    public String getSite() {
-        return site;
-    }
-
-    public void setSite(String site) {
-        this.site = site;
-    }
-
     public Integer getRunNum() {
         return runNum;
     }
@@ -188,13 +215,20 @@ public class AmazonTask {
         this.createdDate = createdDate;
     }
 
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
     @Override
     public String toString() {
         return "AmazonTask{" +
                 "id=" + id +
                 ", args='" + args + '\'' +
                 ", level=" + level +
-                ", site='" + site + '\'' +
                 ", runNum=" + runNum +
                 ", runingNum=" + runingNum +
                 ", runCompleted=" + runCompleted +

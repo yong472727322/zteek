@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zteek.mapper.VmCountMapper" >
+
+    <resultMap id="BaseResultMap" type="com.zteek.entity.VmCount" >
+        <id column="id" property="id"/>
+        <result column="userName" property="userName" />
+        <result column="asin" property="asin" />
+        <result column="keyword" property="keyword" />
+        <result column="runCount" property="runCount" />
+        <result column="beforeCount" property="beforeCount" />
+        <result column="vmStatus" property="vmStatus" />
+        <result column="message" property="message" />
+        <result column="country" property="country" />
+        <result column="taskName" property="taskName" />
+        <result column="restart" property="restart" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    <!-- 虚拟机执行情况列表 -->
+    <select id="getVmList" resultMap="BaseResultMap">
+        select
+        *
+        from
+        amazon_vm_pc t
+        WHERE 1=1
+        <if test="asin != null and asin != ''">
+            and t.asin = #{asin}
+        </if>
+        order by t.create_time asc
+    </select>
+    <!-- 增加一台虚拟机==》名称必须和虚拟机用户名相对应 -->
+    <insert id="insertVm">
+         INSERT INTO amazon_vm_pc(userName,asin, runCount, beforeCount,restart,updateWar, vmStatus,message,create_time,update_time)
+        VALUES (
+          #{userName},null,0,0,1,1,0,'虚拟机空闲中',now(),now()
+        )
+    </insert>
+    <!-- 设置昨天执行次数等于已执行次数 -->
+    <select id="updateBeforeCount">
+        update amazon_vm_pc set beforeCount=runCount
+    </select>
+    <!-- 根据虚拟机名称修改虚拟机已执行次数，虚拟机在跑asin和更新最后一次执行时间 -->
+    <select id="updateVmCount">
+        update amazon_vm_pc set asin=#{asin},runCount=runCount+1,update_time = now() where userName=#{userName}
+    </select>
+    <!-- 修改虚拟机的执行状态已经虚拟机运行信息 -->
+    <select id="updateVmStatus">
+        update amazon_vm_pc set vmStatus=#{vmStatus},message=#{message},keyword=#{keyword} where userName=#{userName}
+    </select>
+    <!-- 将虚拟机的已执行次数清空 -->
+    <select id="updateCountToNull">
+        update amazon_vm_pc set runCount=0
+    </select>
+    <!-- 解除虚拟机的异常状态，并把它设置为正在运行中 -->
+    <select id="updateStatus">
+        update amazon_vm_pc set vmStatus=1,message='虚拟机正常运行中' where userName=#{userName}
+    </select>
+    <!-- 根据虚拟机id查询国家信息和指定任务名称 -->
+    <select id="findVmForId" resultMap="BaseResultMap">
+        select country,userName,taskName from amazon_vm_pc  where id=#{id}
+    </select>
+    <!-- PC端根据任务id修改已执行次数 -->
+    <select id="getCountryAndTaskName" resultMap="BaseResultMap">
+        select * from amazon_vm_pc  where userName=#{userName}
+    </select>
+    <!-- 给虚拟机指定国家和任务 -->
+    <select id="vmCountUpdate">
+        update amazon_vm_pc set userName=#{userName},taskName=#{taskName},country=#{country} where id=#{id}
+    </select>
+    <!-- 重启虚拟机 -->
+    <select id="restart">
+        update amazon_vm_pc set restart=0 where id=#{id}
+    </select>
+    <!-- 更新虚拟机 -->
+    <select id="updateWar">
+        update amazon_vm_pc set updateWar=0 where id=#{id}
+    </select>
+    <!-- 执行重启后将虚拟机的状态设置为已重启 -->
+    <select id="updateRestartStatus">
+        update amazon_vm_pc set restart=1 where userName=#{userName}
+    </select>
+    <!-- 执行更新后将虚拟机的状态设置为已更新 -->
+    <select id="updateWarStatus">
+        update amazon_vm_pc set updateWar=1 where userName=#{userName}
+    </select>
+
+</mapper>

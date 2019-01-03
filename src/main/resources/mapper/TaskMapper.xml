@@ -7,12 +7,12 @@
         <result column="args" property="args" />
         <result column="asin" property="asin" />
         <result column="level" property="level" />
-        <result column="site" property="site" />
         <result column="run_num" property="runNum" />
         <result column="runing_num" property="runingNum" />
         <result column="run_completed" property="runCompleted" />
         <result column="remaining" property="remaining" />
         <result column="data_status" property="dataStatus" />
+        <result column="country" property="country" />
         <result column="created_by" property="createdBy" />
         <result column="created_date" property="createdDate" />
 
@@ -22,16 +22,18 @@
 
 
         <result column="asin" property="asin" />
-        <result column="product_name" property="productName" />
+        <result column="taskName" property="taskName" />
         <result column="run_num" property="runNum" />
-        <result column="completed_num" property="completedNum" />
         <result column="url" property="url" />
-        <result column="level" property="level" />
+        <result column="doPage" property="doPage" />
+        <result column="count" property="count" />
+        <result column="sginCount" property="sginCount" />
+        <result column="update_time" property="updateTime" />
     </resultMap>
 
     <!-- 按照级别倒序、创建时间升序，获取指定数量任务 by:leo,at:2018/10/18,up:leo,at:2018/10/28 -->
     <select id="getTasks" resultMap="BaseResultMap">
-         select id,args,run_num,run_completed,remaining from amazon_task t where t.remaining &gt; 0 and t.data_status=1 order by t.level desc,t.created_date
+         select id,args,run_num,run_completed,remaining,country from amazon_task t where country=#{country} and t.remaining &gt; 0 and t.data_status=1  order by t.level desc,t.created_date
         <if test="maxTaskNum != null and maxTaskNum != ''">
             LIMIT #{maxTaskNum}
         </if>
@@ -41,7 +43,7 @@
     <update id="updateTaskStatusById">
         update amazon_task set data_status=#{dataStatus} where id = #{id}
     </update>
-
+    <!-- 根据id修改已执行次数和未执行次数 -->
     <update id="updateTaskById">
         update amazon_task set runing_num = runing_num + 1,remaining = remaining -1 where id = #{id}
     </update>
@@ -63,15 +65,15 @@
 
 
     <insert id="insertTask">
-        INSERT INTO amazon_task(args,asin, `level`, site, run_num, runing_num, run_completed, remaining, created_by, created_date)
+        INSERT INTO amazon_task(args,asin, `level`, run_num, runing_num, run_completed, remaining,country, created_by, created_date)
         VALUES (
-          #{args},#{asin},#{level},#{site},#{runNum},0,0,#{runNum},#{createdBy},now()
+          #{args},#{asin},#{level},#{runNum},0,0,#{runNum},#{country},#{createdBy},now()
         )
     </insert>
 
     <select id="getTaskList" resultMap="BaseResultMap">
       select
-        t.id,t.args,t.asin,t.`level`,t.site,t.run_num,t.runing_num,t.run_completed,t.remaining,t.data_status,t.created_by,t.created_date
+        t.id,t.args,t.asin,t.`level`,t.run_num,t.runing_num,t.run_completed,t.remaining,t.data_status,t.country,t.created_by,t.created_date
       from
           amazon_task t
        WHERE 1=1
@@ -190,19 +192,30 @@
             ) t2
     </select>
 
-
+    <!-- PC端根据国家随机获取一个任务 -->
     <select id="getTaskForPC" resultMap="BaseResultMap">
-        select * from  amazon_task_pc t where t.data_status=1 and t.completed_num &lt; t.run_num order by t.`level` desc,t.created_time limit 1
+        select * from  amazon_task_pc t where t.data_status=1 and t.count &lt; t.run_num and country=#{Country} order by RAND() LIMIT 1;
     </select>
-    <update id="updatePCTaskById">
-        update amazon_task_pc set completed_num = if(((completed_num + 1) &gt; run_num),run_num,completed_num + 1) where id = #{id}
-    </update>
+    <!-- PC端根据国家和任务名称获取指定任务 -->
+    <select id="getTaskForPCByName" resultMap="BaseResultMap">
+        select * from  amazon_task_pc t where t.data_status=1 and t.count &lt; t.run_num and t.taskName=#{taskName} and country=#{Country};
+    </select>
+    <!-- PC端随机获取一千条有序Cookie -->
+    <select id="getCookies" resultType="com.zteek.entity.Cookies">
+        SELECT r1.id,r1.cookie FROM amazon_cookie AS r1 JOIN (SELECT ROUND(RAND() * (SELECT MAX(id) FROM amazon_cookie)) AS id) AS r2 WHERE r1.id >= r2.id and r1.nextTime &lt; now() ORDER BY r1.id ASC LIMIT 500;
+    </select>
+
+    <select id="updateCookieNextTime">
+        update amazon_cookie set nextTime=#{date} where id = #{id}
+    </select>
+    <!-- PC端添加一个任务 -->
     <insert id="insertPCTask">
-         INSERT INTO amazon_task_pc(args,asin,product_name, run_num, completed_num,url, `level`,created_time)
+         INSERT INTO amazon_task_pc(args,taskName,asin,doPage, run_num,`count`,url,country, created_time)
         VALUES (
-          #{args},#{asin},#{productName},#{runNum},0,#{url},#{level},now()
+          #{args},#{taskName},#{asin},#{doPage},#{runNum},0,#{url},#{country},now()
         )
     </insert>
+    <!-- PC端数据列表 -->
     <select id="getPCTaskList" resultMap="BaseResultMap">
         select
           *
@@ -215,7 +228,34 @@
         <if test="dataStatus != null and dataStatus != ''">
             and t.data_status = #{dataStatus}
         </if>
-        order by t.`level` desc,t.created_time desc
+        order by t.created_time desc
     </select>
-
+    <!-- PC端删除一条数据 -->
+    <select id="deleteTask">
+        delete from amazon_task_pc where id=#{id}
+    </select>
+    <!-- PC端根据任务id修改已执行次数 -->
+    <select id="updateCount">
+        update amazon_task_pc set `count`=`count`+1,update_time = now() where id=#{taskId}
+    </select>
+    <!-- PC端根据任务id修改登录成功已执行次数 -->
+    <select id="updateSginCount">
+        update amazon_task_pc set `sginCount`=`sginCount`+1 where id=#{taskId}
+    </select>
+    <!-- PC端根据任务id查找任务详情，主要用于做编辑的时候回显数据 -->
+    <select id="findTaskForId" resultType="com.zteek.entity.AmazonTaskRun">
+        select asin,doPage,url,run_num as runNum,`count`,taskName,country from amazon_task_pc where id=#{id}
+    </select>
+    <!-- PC端根据任务id修改任务详情 -->
+    <select id="updateTask">
+        update amazon_task_pc set asin=#{task.asin},doPage=#{task.doPage},url=#{task.url},run_num=#{task.runNum},taskName=#{task.taskName},`count`=#{task.count},country=#{task.country} where id=#{id}
+    </select>
+    <!-- 手机端查找正在执行的国家有哪些 -->
+    <select id="selectCountry" resultMap="BaseResultMap">
+        select country from amazon_task where remaining &gt; 0 and data_status=1 group by country
+    </select>
+    <!-- 手机端查找当前任务的国家 -->
+    <select id="selectCountryById" resultMap="BaseResultMap">
+        select country from amazon_task where id=#{id}
+    </select>
 </mapper>

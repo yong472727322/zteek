@@ -5,17 +5,17 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.zteek.entity.*;
 import com.zteek.exception.BusinessException;
-import com.zteek.service.PhoneService;
-import com.zteek.service.TaskService;
-import com.zteek.service.UserService;
+import com.zteek.service.*;
 import com.zteek.utils.Constant;
 import com.zteek.utils.ReturnResult;
+import com.zteek.utils.TaskMapManager;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +43,10 @@ public class AdminController {
     private TaskService taskService;
     @Autowired
     private PhoneService phoneService;
+    @Autowired
+    private VmCountService vmCountService;
+    @Autowired
+    private AccountService accountService;
 
     @Value("${apk.path}")
     private String apkPath;
@@ -260,7 +264,7 @@ public class AdminController {
 
             String s = JSONObject.toJSONString(param);
             task.setArgs(s);
-            task.setSite("US");
+            //task.setSite("US");
             HttpSession session = request.getSession();
             User user = (User) session.getAttribute(Constant.user);
             task.setCreatedBy(user.getName());
@@ -280,13 +284,15 @@ public class AdminController {
     @GetMapping("taskStart/{id}")
     public String taskStart(@PathVariable("id") Long id){
         int i = taskService.updateTaskStatusById(1,id);
+        //根据id，查询出任务对应的国家
+        AmazonTask amazonTask = taskService.selectCountryById(id);
         if(i > 0){
             //清空 内存中的任务
-            Constant.tasks.clear();
+            TaskMapManager.getInstance().getTask(amazonTask.getCountry()).clear();
             //重新 从数据库中查询
-            List<AmazonTask> tasks = taskService.getTasks(Constant.max_task_num);
+            List<AmazonTask> tasks = taskService.getTasks(Constant.max_task_num,amazonTask.getCountry());
             for(AmazonTask task : tasks){
-                Constant.tasks.add(task);
+                TaskMapManager.getInstance().getTask(amazonTask.getCountry()).add(task);
             }
         }
         return "redirect:/admin/taskList";
@@ -300,13 +306,21 @@ public class AdminController {
     @GetMapping("taskStop/{id}")
     public String taskStop(@PathVariable("id") Long id){
         int i = taskService.updateTaskStatusById(0,id);
+        String country = null;
+        List<AmazonTask> taskList = taskService.selectCountry();
+        if (taskList.size()>1) {
+            int random = (int) ( Math.random () * taskList.size());
+            country = taskList.get(random).getCountry();
+        }else {
+            country = taskList.get(0).getCountry();
+        }
         if(i > 0){
             //清空 内存中的任务
-            Constant.tasks.clear();
+            TaskMapManager.getInstance().getTask(country).clear();
             //重新 从数据库中查询
-            List<AmazonTask> tasks = taskService.getTasks(Constant.max_task_num);
+            List<AmazonTask> tasks = taskService.getTasks(Constant.max_task_num,country);
             for(AmazonTask task : tasks){
-                Constant.tasks.add(task);
+                TaskMapManager.getInstance().getTask(country).add(task);
             }
         }
         return "redirect:/admin/taskList";
@@ -378,6 +392,95 @@ public class AdminController {
         }
         return i;
     }
+
+    /**
+     * 编辑PC端任务
+     * @param task
+     * @return
+     */
+    @ResponseBody
+    @PostMapping("pcTaskUpdate")
+    public void pcTaskUpdate(HttpServletRequest request, AmazonTaskRun task,Long id){
+        try{
+            logger.info("编辑PC端任务，任务参数[{}]",task);
+            if(id !=null && id > 0) {
+                taskService.updateTask(task, id);
+            }
+            logger.info("编辑PC端任务[{}]，结果：[{}]",task.getAsin());
+        }catch (Exception e){
+            logger.error("编辑PC端任务出错，原因:[{}]",e);
+        }
+    }
+
+    @ResponseBody
+    @PostMapping("taskDelete/{id}")
+    public String taskDelete(@PathVariable("id") Long id){
+        String result = null;
+        try{
+            if (id !=null && id > 0) {
+                taskService.deleteTask(id);
+            }
+            result="删除任务成功";
+            logger.info("删除任务成功");
+        }catch (Exception e){
+            logger.error("删除任务失败，原因:[{}]",e);
+            result="删除任务失败";
+        }
+        return result;
+    }
+
+    @GetMapping("taskUpdate/{id}")
+    public String updateTask(@PathVariable("id")Long id, ModelMap map){
+        map.addAttribute("id",id);
+        AmazonTaskRun task=taskService.findtaskForId(id);
+        map.addAttribute("task",task);
+        return "pcTaskUpdate";
+    }
+
+    @GetMapping("addCountryAndTask/{id}")
+    public String addCountryAndTask(@PathVariable("id")Long id, ModelMap map){
+        map.addAttribute("id",id);
+        VmCount vmCount=vmCountService.findVmForId(id);
+        map.addAttribute("vmCount",vmCount);
+        return "vmCountUpdate";
+    }
+
+    /**
+     * 指定虚拟机任务
+     * @param vmCount
+     * @return
+     */
+    @ResponseBody
+    @PostMapping(value = "vmCountUpdate")
+    public void vmCountUpdate(HttpServletRequest request, VmCount vmCount){
+        try{
+            logger.info("指定虚拟机任务，任务参数[{}]",vmCount);
+            if (vmCount!=null) {
+                vmCountService.vmCountUpdate(vmCount);
+            }
+            logger.info("指定虚拟机任务[{}]，结果：[{}]",vmCount);
+        }catch (Exception e){
+            logger.error("指定虚拟机任务出错，原因:[{}]",e);
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("updateStatus/{userName}")
+    public String updateStatus(@PathVariable("userName")String userName){
+        String result = null;
+        try{
+            if (userName !=null) {
+                vmCountService.updateStatus(userName);
+            }
+            result="标记异常成功";
+            logger.info("标记异常成功");
+        }catch (Exception e){
+            logger.error("标记异常失败，原因:[{}]",e);
+            result="标记异常失败";
+        }
+        return result;
+    }
+
     @GetMapping("pcTaskList")
     public String pcTaskList(){
         return "pcTaskList";
@@ -392,6 +495,160 @@ public class AdminController {
         dataView.setRecordsTotal(Integer.parseInt(pageInfo.getTotal()+""));
         dataView.setData(taskList);
         return dataView;
+    }
+
+    @GetMapping("vmList")
+    public String vmList(){
+        return "vmList";
+    }
+
+    @ResponseBody
+    @RequestMapping("vmData")
+    public Object vmData(int iDisplayStart,int iDisplayLength){
+        PageHelper.startPage((iDisplayStart/iDisplayLength)+1,iDisplayLength);
+        List<VmCount> vmList = vmCountService.getVmList(null);
+        PageInfo<VmCount> pageInfo = new PageInfo<>(vmList);
+        DatatablesView<VmCount> dataView = new DatatablesView<>();
+        dataView.setRecordsTotal(Integer.parseInt(pageInfo.getTotal()+""));
+        dataView.setData(vmList);
+        return dataView;
+    }
+
+    @GetMapping("toVmAdd")
+    public String toVmAdd(){
+        return "vmAdd";
+    }
+    /**
+     * 添加虚拟机
+     * @param vmCount
+     * @return
+     */
+    @ResponseBody
+    @PostMapping("vmAdd")
+    public Integer vmAdd(HttpServletRequest request, VmCount vmCount){
+        int i = 0;
+        try{
+            logger.info("添加PC端任务，任务参数[{}]",vmCount);
+            if(StringUtils.isNotEmpty(vmCount.getUserName())){
+                vmCount.setUserName(vmCount.getUserName().trim());
+            }
+            i = vmCountService.insertVm(vmCount);
+            logger.info("添加PC端任务[{}]，结果：[{}]",vmCount.getAsin(),i);
+        }catch (Exception e){
+            logger.error("添加PC端任务出错，原因:[{}]",e);
+        }
+        return i;
+    }
+
+
+
+    @GetMapping("countList")
+    public String countList(){
+        return "countList";
+    }
+    @ResponseBody
+    @RequestMapping("countData")
+    public Object countData(int iDisplayStart,int iDisplayLength){
+        PageHelper.startPage((iDisplayStart/iDisplayLength)+1,iDisplayLength);
+        List<Account> countList = accountService.getCountList(null);
+        PageInfo<Account> pageInfo = new PageInfo<>(countList);
+        DatatablesView<Account> dataView = new DatatablesView<>();
+        dataView.setRecordsTotal(Integer.parseInt(pageInfo.getTotal()+""));
+        dataView.setData(countList);
+        return dataView;
+    }
+
+    @ResponseBody
+    @GetMapping("openUS")
+    public String openUS(){
+        String result = null;
+        try{
+            accountService.openUS();
+            result="开启美国账号成功";
+            logger.info("开启美国账号成功");
+        }catch (Exception e){
+            logger.error("开启美国账号失败，原因:[{}]",e);
+            result="开启美国账号失败";
+        }
+        return result;
+    }
+
+    @ResponseBody
+    @GetMapping("closeUS")
+    public String closeUS(){
+        String result = null;
+        try{
+            accountService.closeUS();
+            result="关闭美国账号成功";
+            logger.info("关闭美国账号成功");
+        }catch (Exception e){
+            logger.error("关闭美国账号失败，原因:[{}]",e);
+            result="关闭美国账号失败";
+        }
+        return result;
+    }
+
+    @ResponseBody
+    @GetMapping("openJP")
+    public String openJP(){
+        String result = null;
+        try{
+            accountService.openJP();
+            result="开启日本账号成功";
+            logger.info("开启日本账号成功");
+        }catch (Exception e){
+            logger.error("开启日本账号失败，原因:[{}]",e);
+            result="开启日本账号失败";
+        }
+        return result;
+    }
+
+    @ResponseBody
+    @GetMapping("closeJP")
+    public String closeJP(){
+        String result = null;
+        try{
+            accountService.closeJP();
+            result="关闭日本账号成功";
+            logger.info("关闭日本账号成功");
+        }catch (Exception e){
+            logger.error("关闭日本账号失败，原因:[{}]",e);
+            result="关闭日本账号失败";
+        }
+        return result;
+    }
+    @ResponseBody
+    @PostMapping("restart/{id}")
+    public String restart(@PathVariable("id")Long id){
+        String result = null;
+        try{
+            if (id !=null && id > 0) {
+                vmCountService.restart(id);
+            }
+            result="重启成功，将于五分钟内生效";
+            logger.info("重启虚拟机成功");
+        }catch (Exception e){
+            logger.error("重启失败，原因:[{}]",e);
+            result="重启虚拟机失败!!!!!!!!";
+        }
+        return result;
+    }
+
+    @ResponseBody
+    @PostMapping("updateWar/{id}")
+    public String updateWar(@PathVariable("id")Long id){
+        String result = null;
+        try{
+            if (id !=null && id > 0) {
+                vmCountService.updateWar(id);
+            }
+            result="更新成功，将于五分钟内生效";
+            logger.info("更新虚拟机成功");
+        }catch (Exception e){
+            logger.error("更新失败，原因:[{}]",e);
+            result="更新虚拟机失败!!!!!!!";
+        }
+        return result;
     }
 
 }

@@ -6,56 +6,43 @@
     <div th:replace="_meta :: script"></div>
     <div th:replace="_meta :: link"></div>
 
-    <title>添加PC端任务 - 后台管理系统 v1.0</title>
+    <title>指定虚拟机任务 - 后台管理系统 v1.0</title>
     <meta name="keywords" content="H-ui.admin v3.0,H-ui网站后台模版,后台模版下载,后台管理系统模版,HTML后台模版下载">
     <meta name="description" content="H-ui.admin v3.0，是一款由国人开发的轻量级扁平化网站后台模板，完全免费开源的网站后台管理系统模版，适合中小型CMS后台系统。">
 </head>
 <body>
 
     <article class="cl pd-20">
-        <form  class="form form-horizontal" id="form-member-add">
+        <form  class="form form-horizontal" id="form-member-update">
             <div class="row cl">
-                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>任务名称：</label>
+                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>虚拟机ID：</label>
                 <div class="formControls col-xs-8 col-sm-9">
-                    <input type="text" class="input-text" value="" placeholder="任务名称" id="taskName" name="taskName">
+                    <input type="text" class="input-text" th:value="${id}" placeholder="虚拟机ID" id="id" name="id">
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>虚拟机名称：</label>
+                <div class="formControls col-xs-8 col-sm-9">
+                    <input type="text" class="input-text" th:value="${vmCount.userName}" placeholder="虚拟机名称" id="userName" name="userName">
                 </div>
             </div>
             <div class="row cl">
                 <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>所跑国家：</label>
                 <div class="formControls col-xs-8 col-sm-9">
-                    <input type="text" class="input-text" value="" placeholder="所跑国家，如：US,JP,DE,UK" id="country" name="country">
+                    <input type="text" class="input-text" th:value="${vmCount.country}" placeholder="所跑国家" id="country" name="country">
                 </div>
             </div>
             <div class="row cl">
-                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>ASIN：</label>
+                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>指定任务：</label>
                 <div class="formControls col-xs-8 col-sm-9">
-                    <input type="text" class="input-text" value="" placeholder="ASIN" id="asin" name="asin">
-                </div>
-            </div>
-            <div class="row cl">
-                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>最多翻到第几页：</label>
-                <div class="formControls col-xs-8 col-sm-9">
-                    <input type="text" class="input-text" value="" placeholder="最多翻到第几页" id="doPage" name="doPage">
-                </div>
-            </div>
-            <div class="row cl">
-                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>产品连接：</label>
-                <div class="formControls col-xs-8 col-sm-9">
-                    <input type="text" class="input-text" value="" placeholder="产品连接" id="url" name="url">
-                </div>
-            </div>
-
-            <div class="row cl">
-                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>执行次数：</label>
-                <div class="formControls col-xs-8 col-sm-9">
-                    <input type="number" class="input-text" placeholder="执行次数" min="0" name="runNum" id="runNum">
+                    <input type="text" class="input-text" th:value="${vmCount.taskName}" placeholder="指定任务" id="taskName" name="taskName">
                 </div>
             </div>
         </form>
         <div class="clear"></div>
         <div class="row cl">
             <div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
-                <input type="button" class="btn btn-primary radius" id="subBtn" value="&nbsp;&nbsp;提交&nbsp;&nbsp;">
+                <input type="submit" class="btn btn-primary radius" id="subBtn" value="&nbsp;&nbsp;提交&nbsp;&nbsp;">
             </div>
         </div>
     </article>
@@ -96,8 +83,8 @@
 //        });
 
         $("#subBtn").click(function(){
-            $("#form-member-add").ajaxSubmit({
-                url:"/admin/pcTaskAdd",
+            $("#form-member-update").ajaxSubmit({
+                url:"/admin/vmCountUpdate",
                 type : "post",
                 dataType : "json",
                 success : function(data) {
